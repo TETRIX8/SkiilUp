@@ -1,0 +1,102 @@
+/* Mobile-specific styles for better touch interaction */
+
+/* Increase touch target sizes for mobile */
+@media (max-width: 768px) {
+  /* Buttons should be at least 44px for good touch targets */
+  .btn-mobile {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Form inputs should be larger on mobile */
+  .input-mobile {
+    min-height: 48px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Better spacing for mobile cards */
+  .card-mobile {
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+  
+  /* Responsive text sizes */
+  .text-responsive-sm {
+    font-size: 0.875rem;
+  }
+  
+  .text-responsive-base {
+    font-size: 1rem;
+  }
+  
+  .text-responsive-lg {
+    font-size: 1.125rem;
+  }
+  
+  /* Mobile-friendly navigation */
+  .nav-mobile {
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Better mobile grid layouts */
+  .grid-mobile-1 {
+    grid-template-columns: 1fr;
+  }
+  
+  .grid-mobile-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Mobile-specific spacing */
+  .space-mobile-sm {
+    gap: 0.5rem;
+  }
+  
+  .space-mobile-md {
+    gap: 1rem;
+  }
+  
+  .space-mobile-lg {
+    gap: 1.5rem;
+  }
+}
+
+/* Tablet-specific adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .grid-tablet-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .grid-tablet-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Ensure proper viewport handling */
+@viewport {
+  width: device-width;
+  zoom: 1.0;
+}
+
+/* Prevent horizontal scroll on mobile */
+body {
+  overflow-x: hidden;
+}
+
+/* Better mobile scrolling */
+.scroll-mobile {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* Mobile-friendly focus states */
+@media (max-width: 768px) {
+  button:focus,
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+}
+
