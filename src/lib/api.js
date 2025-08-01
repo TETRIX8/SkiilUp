@@ -1,5 +1,5 @@
 // src/lib/api.js
-const API_BASE_URL = 'http://185.232.204.20:5000/api';
+const API_BASE_URL = 'https://tetrixuno.duckdns.org/api';
 
 class ApiClient {
   constructor() {
