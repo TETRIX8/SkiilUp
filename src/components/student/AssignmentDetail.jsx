@@ -132,7 +132,7 @@ export const AssignmentDetail = () => {
   };
 
   const handleDownloadFile = (filePath, fileName) => {
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+    const API_BASE_URL ='https://tetrixuno.duckdns.org';
     const downloadUrl = `${API_BASE_URL}/api/files/download/${filePath}`;
 
     fetch(downloadUrl, {
