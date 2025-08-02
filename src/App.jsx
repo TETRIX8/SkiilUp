@@ -14,6 +14,7 @@ import { ProgressPage } from './components/student/ProgressPage';
 import { CalendarPage } from './components/student/CalendarPage';
 import { GradesPage } from './components/student/GradesPage';
 import { Profile } from './pages/Profile';
+import Error404 from './pages/Error404';
 import { AKProjectBadge } from './components/ui/AKProjectBadge';
 import './App.css';
 
@@ -68,6 +69,7 @@ function AppContent() {
           <Route path="/community" element={<DisciplinesPage />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Profile />} />
+          <Route path="*" element={<Error404 />} />
         </Routes>
       </div>
       <AKProjectBadge />
