@@ -90,7 +90,7 @@ export const AssignmentDetail = () => {
       formData.append('file', file);
       formData.append('assignment_id', id);
 
-      const API_BASE_URL = 'https://tetrixuno.duckdns.org:5000';
+      const API_BASE_URL = 'https://tetrixuno.duckdns.org';
 
       const response = await fetch(`${API_BASE_URL}/api/files/upload`, {
         method: 'POST',
