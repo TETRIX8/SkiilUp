@@ -241,6 +241,152 @@ export const StudentNavigation = () => {
                   })}
                 </div>
 
+                {/* Кнопка меню для десктопа */}
+                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                  <SheetTrigger asChild>
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="p-1.5 lg:p-2 rounded-full hover:bg-gray-100"
+                      >
+                        <Menu className="h-4 w-4 lg:h-5 lg:w-5 text-gray-600" />
+                      </Button>
+                    </motion.div>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-80 overflow-y-auto">
+                    <SheetHeader>
+                      <SheetTitle className="flex items-center space-x-3">
+                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-2">
+                          <GraduationCap className="h-5 w-5 text-white" />
+                        </div>
+                        <span className="text-lg font-bold">SkillUp</span>
+                      </SheetTitle>
+                    </SheetHeader>
+                    
+                    <div className="mt-6 space-y-4 pb-6">
+                      {/* Профиль пользователя */}
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-2">
+                            <User className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {user?.first_name} {user?.last_name}
+                            </p>
+                            <p className="text-sm text-gray-500">{user?.email}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Навигация */}
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-gray-500 uppercase tracking-wide px-2">
+                          Навигация
+                        </p>
+                        {navigationItems.map((item) => {
+                          const Icon = item.icon;
+                          const isActive = currentPath === item.path;
+                          
+                          return (
+                            <motion.div
+                              key={item.id}
+                              whileHover={{ x: 5 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <Button
+                                variant={isActive ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => handleNavigation(item.path)}
+                                className={`w-full justify-start px-4 py-3 rounded-lg transition-all duration-200 ${
+                                  isActive 
+                                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md' 
+                                    : 'hover:bg-gray-100 text-gray-700'
+                                }`}
+                              >
+                                <Icon className="h-4 w-4 mr-3" />
+                                <div className="flex-1 text-left">
+                                  <div className="flex items-center justify-between">
+                                    <span>{item.label}</span>
+                                    {item.badge && (
+                                      <Badge 
+                                        variant="secondary" 
+                                        className="bg-red-500 text-white text-xs"
+                                      >
+                                        {item.badge}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-xs opacity-75 mt-1">{item.description}</p>
+                                </div>
+                              </Button>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Быстрые действия */}
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-gray-500 uppercase tracking-wide px-2">
+                          Быстрые действия
+                        </p>
+                        {quickActions.map((action) => {
+                          const Icon = action.icon;
+                          return (
+                            <motion.div
+                              key={action.id}
+                              whileHover={{ x: 5 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={action.action}
+                                className="w-full justify-start px-4 py-3 rounded-lg hover:bg-gray-100"
+                              >
+                                <Icon className="h-4 w-4 mr-3" />
+                                <div className="flex items-center justify-between flex-1">
+                                  <span>{action.label}</span>
+                                  {action.badge && (
+                                    <Badge 
+                                      variant="secondary" 
+                                      className="bg-red-500 text-white text-xs"
+                                    >
+                                      {action.badge}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </Button>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Выход */}
+                      <div className="pt-4 border-t border-gray-200">
+                        <motion.div
+                          whileHover={{ x: 5 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleLogout}
+                            className="w-full justify-start px-4 py-3 rounded-lg text-red-600 hover:bg-red-50"
+                          >
+                            <LogOut className="h-4 w-4 mr-3" />
+                            Выйти
+                          </Button>
+                        </motion.div>
+                      </div>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+
                 {/* Профиль пользователя */}
                 <motion.div
                   whileHover={{ scale: 1.05 }}
@@ -375,7 +521,7 @@ export const StudentNavigation = () => {
                       </Button>
                     </motion.div>
                   </SheetTrigger>
-                  <SheetContent side="right" className="w-80">
+                  <SheetContent side="right" className="w-80 overflow-y-auto">
                     <SheetHeader>
                       <SheetTitle className="flex items-center space-x-3">
                         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-2">
@@ -385,7 +531,7 @@ export const StudentNavigation = () => {
                       </SheetTitle>
                     </SheetHeader>
                     
-                    <div className="mt-6 space-y-4">
+                    <div className="mt-6 space-y-4 pb-6">
                       {/* Профиль пользователя */}
                       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4">
                         <div className="flex items-center space-x-3">
@@ -504,6 +650,85 @@ export const StudentNavigation = () => {
                     </div>
                   </SheetContent>
                 </Sheet>
+
+                {/* Профиль пользователя */}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative"
+                >
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                    className="flex items-center space-x-2 px-2 lg:px-3 py-2 rounded-lg hover:bg-gray-100"
+                  >
+                    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-1">
+                      <User className="h-3 w-3 lg:h-4 lg:w-4 text-white" />
+                    </div>
+                    <span className="text-xs lg:text-sm font-medium text-gray-700 hidden sm:inline">
+                      {user?.first_name}
+                    </span>
+                  </Button>
+
+                  <AnimatePresence>
+                    {isProfileMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute right-0 mt-2 w-48 lg:w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50"
+                      >
+                        <div className="px-3 lg:px-4 py-3 border-b border-gray-100">
+                          <p className="text-sm font-medium text-gray-900">
+                            {user?.first_name} {user?.last_name}
+                          </p>
+                          <p className="text-xs text-gray-500">{user?.email}</p>
+                        </div>
+                        
+                        <div className="py-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              navigate('/profile');
+                              setIsProfileMenuOpen(false);
+                            }}
+                            className="w-full justify-start px-3 lg:px-4 py-2 text-sm hover:bg-gray-50"
+                          >
+                            <User className="h-4 w-4 mr-3" />
+                            Профиль
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              navigate('/settings');
+                              setIsProfileMenuOpen(false);
+                            }}
+                            className="w-full justify-start px-3 lg:px-4 py-2 text-sm hover:bg-gray-50"
+                          >
+                            <Settings className="h-4 w-4 mr-3" />
+                            Настройки
+                          </Button>
+                        </div>
+                        
+                        <div className="border-t border-gray-100 py-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleLogout}
+                            className="w-full justify-start px-3 lg:px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                          >
+                            <LogOut className="h-4 w-4 mr-3" />
+                            Выйти
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               </div>
             </div>
           </div>

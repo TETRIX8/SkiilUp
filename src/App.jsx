@@ -17,6 +17,7 @@ import { Profile } from './pages/Profile';
 import Error404 from './pages/Error404';
 import { AKProjectBadge } from './components/ui/AKProjectBadge';
 import './App.css';
+import { AssignmentsPage } from './components/student/AssignmentsPage';
 
 function AppContent() {
   const { isAuthenticated, loading, user } = useAuth();
@@ -60,7 +61,7 @@ function AppContent() {
           <Route path="/disciplines" element={<DisciplinesPage />} />
           <Route path="/discipline/:disciplineId" element={<DisciplineDetail />} />
           <Route path="/topics/:id" element={<TopicDetail />} />
-          <Route path="/assignments" element={<DisciplinesPage />} />
+          <Route path="/assignments" element={<AssignmentsPage />} />
           <Route path="/assignments/:id" element={<AssignmentDetail />} />
           <Route path="/grades" element={<GradesPage />} />
           <Route path="/achievements" element={<AchievementsPage />} />
