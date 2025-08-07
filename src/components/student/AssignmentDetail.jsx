@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import MDEditor from '@uiw/react-md-editor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -410,7 +411,7 @@ export const AssignmentDetail = () => {
           )}
         </motion.div>
 
-        {assignment.content && (
+        {(assignment.content || assignment.instructions) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -418,13 +419,13 @@ export const AssignmentDetail = () => {
           >
             <Card className="mb-8 shadow-lg rounded-xl overflow-hidden border border-gray-200">
               <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
-                <CardTitle className="text-xl text-gray-800">Описание задания</CardTitle>
+                <CardTitle className="text-xl text-gray-800">Инструкции для выполнения</CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="prose max-w-none">
-                  <div 
-                    className="text-gray-700 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: assignment.content }} 
+                <div className="prose prose-sm max-w-none">
+                  <MDEditor.Markdown 
+                    source={assignment.instructions || assignment.content || ''} 
+                    style={{ padding: 0 }}
                   />
                 </div>
               </CardContent>

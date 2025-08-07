@@ -120,7 +120,6 @@
   }
 }
 
-
 @media (max-width: 1024px) {
   .lg\:grid-cols-2 {
     grid-template-columns: 1fr;
@@ -128,5 +127,176 @@
   .lg\:space-y-0 {
     margin-top: 2rem !important;
   }
+}
+
+/* Markdown Editor Styles */
+.w-md-editor {
+  border-radius: 0.5rem !important;
+  border: 1px solid #e5e7eb !important;
+  overflow: hidden !important;
+}
+
+.w-md-editor-toolbar {
+  background-color: #f9fafb !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  padding: 0.5rem !important;
+}
+
+.w-md-editor-toolbar-divider {
+  background-color: #d1d5db !important;
+}
+
+.w-md-editor-toolbar li button {
+  color: #374151 !important;
+  border-radius: 0.25rem !important;
+  padding: 0.25rem 0.5rem !important;
+}
+
+.w-md-editor-toolbar li button:hover {
+  background-color: #e5e7eb !important;
+}
+
+.w-md-editor-toolbar li.active button {
+  background-color: #3b82f6 !important;
+  color: white !important;
+}
+
+.w-md-editor-content {
+  background-color: white !important;
+}
+
+.w-md-editor-text {
+  background-color: white !important;
+  color: #374151 !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+.w-md-editor-text-pre,
+.w-md-editor-text-input {
+  background-color: white !important;
+  color: #374151 !important;
+}
+
+.w-md-editor-preview {
+  background-color: white !important;
+  color: #374151 !important;
+  padding: 1rem !important;
+}
+
+.w-md-editor-preview .wmde-markdown {
+  background-color: white !important;
+  color: #374151 !important;
+}
+
+/* Markdown Preview Styles */
+.w-md-editor-preview .wmde-markdown h1,
+.w-md-editor-preview .wmde-markdown h2,
+.w-md-editor-preview .wmde-markdown h3,
+.w-md-editor-preview .wmde-markdown h4,
+.w-md-editor-preview .wmde-markdown h5,
+.w-md-editor-preview .wmde-markdown h6 {
+  color: #111827 !important;
+  font-weight: 600 !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.w-md-editor-preview .wmde-markdown h1 {
+  font-size: 1.875rem !important;
+  line-height: 2.25rem !important;
+}
+
+.w-md-editor-preview .wmde-markdown h2 {
+  font-size: 1.5rem !important;
+  line-height: 2rem !important;
+}
+
+.w-md-editor-preview .wmde-markdown h3 {
+  font-size: 1.25rem !important;
+  line-height: 1.75rem !important;
+}
+
+.w-md-editor-preview .wmde-markdown p {
+  margin-bottom: 1rem !important;
+  line-height: 1.625 !important;
+}
+
+.w-md-editor-preview .wmde-markdown ul,
+.w-md-editor-preview .wmde-markdown ol {
+  margin-bottom: 1rem !important;
+  padding-left: 1.5rem !important;
+}
+
+.w-md-editor-preview .wmde-markdown li {
+  margin-bottom: 0.25rem !important;
+}
+
+.w-md-editor-preview .wmde-markdown blockquote {
+  border-left: 4px solid #e5e7eb !important;
+  padding-left: 1rem !important;
+  margin: 1rem 0 !important;
+  color: #6b7280 !important;
+}
+
+.w-md-editor-preview .wmde-markdown code {
+  background-color: #f3f4f6 !important;
+  color: #dc2626 !important;
+  padding: 0.125rem 0.25rem !important;
+  border-radius: 0.25rem !important;
+  font-size: 0.875rem !important;
+}
+
+.w-md-editor-preview .wmde-markdown pre {
+  background-color: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 0.5rem !important;
+  padding: 1rem !important;
+  margin: 1rem 0 !important;
+  overflow-x: auto !important;
+}
+
+.w-md-editor-preview .wmde-markdown pre code {
+  background-color: transparent !important;
+  color: #374151 !important;
+  padding: 0 !important;
+}
+
+.w-md-editor-preview .wmde-markdown a {
+  color: #3b82f6 !important;
+  text-decoration: underline !important;
+}
+
+.w-md-editor-preview .wmde-markdown a:hover {
+  color: #2563eb !important;
+}
+
+.w-md-editor-preview .wmde-markdown strong {
+  font-weight: 600 !important;
+  color: #111827 !important;
+}
+
+.w-md-editor-preview .wmde-markdown em {
+  font-style: italic !important;
+  color: #374151 !important;
+}
+
+.w-md-editor-preview .wmde-markdown table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  margin: 1rem 0 !important;
+}
+
+.w-md-editor-preview .wmde-markdown th,
+.w-md-editor-preview .wmde-markdown td {
+  border: 1px solid #e5e7eb !important;
+  padding: 0.5rem !important;
+  text-align: left !important;
+}
+
+.w-md-editor-preview .wmde-markdown th {
+  background-color: #f9fafb !important;
+  font-weight: 600 !important;
 }
 

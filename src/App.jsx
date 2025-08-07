@@ -6,6 +6,8 @@ import { AuthPage } from './components/auth/AuthPage';
 import { DisciplinesPage } from './components/student/DisciplinesPage';
 import { DisciplineDetail } from './components/student/DisciplineDetail';
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { CreateAssignmentPage } from './components/admin/CreateAssignmentPage';
+import { EditAssignmentPage } from './components/admin/EditAssignmentPage';
 import { TopicDetail } from './components/student/TopicDetail';
 import { AssignmentDetail } from './components/student/AssignmentDetail';
 import { StudentDashboard } from './components/student/StudentDashboard';
@@ -42,11 +44,23 @@ function AppContent() {
     );
   }
 
-  // Show admin dashboard for admins and teachers
+  // Show admin routes for admins and teachers
   if (user?.role === 'admin' || user?.role === 'teacher') {
     return (
       <>
-        <AdminDashboard />
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+          <Routes>
+            <Route path="/" element={<AdminDashboard />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/assignments/create" element={<CreateAssignmentPage />} />
+            <Route path="/admin/assignments/:id/edit" element={<EditAssignmentPage />} />
+            <Route path="/admin/assignments" element={<AdminDashboard />} />
+            <Route path="/admin/topics" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminDashboard />} />
+            <Route path="/admin/submissions" element={<AdminDashboard />} />
+            <Route path="*" element={<AdminDashboard />} />
+          </Routes>
+        </div>
         <AKProjectBadge />
       </>
     );

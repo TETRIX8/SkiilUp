@@ -1,41 +1,38 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Plus, 
   Edit, 
   Trash2, 
-  FileText,
-  Calendar,
   AlertCircle,
-  Loader2,
-  Clock
+  FileText,
+  Clock,
+  Target
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { apiClient } from '../../lib/api';
 
 export const AssignmentManager = ({ onStatsUpdate }) => {
+  const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingAssignment, setEditingAssignment] = useState(null);
-  const [formData, setFormData] = useState({
-    topic_id: '',
-    title: '',
-    description: '',
-    instructions: '',
-    max_score: 100,
-    due_date: ''
-  });
-  const [formLoading, setFormLoading] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -58,75 +55,14 @@ export const AssignmentManager = ({ onStatsUpdate }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFormLoading(true);
-    setError('');
-
-    try {
-      const submitData = {
-        ...formData,
-        topic_id: parseInt(formData.topic_id),
-        max_score: parseInt(formData.max_score),
-        due_date: formData.due_date || null
-      };
-
-      if (editingAssignment) {
-        await apiClient.updateAssignment(editingAssignment.id, submitData);
-      } else {
-        await apiClient.createAssignment(submitData);
-      }
-      
-      await loadData();
-      setIsDialogOpen(false);
-      resetForm();
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setFormLoading(false);
-    }
-  };
-
-  const handleEdit = (assignment) => {
-    setEditingAssignment(assignment);
-    setFormData({
-      topic_id: assignment.topic_id.toString(),
-      title: assignment.title,
-      description: assignment.description,
-      instructions: assignment.instructions,
-      max_score: assignment.max_score,
-      due_date: assignment.due_date ? assignment.due_date.split('T')[0] : ''
-    });
-    setIsDialogOpen(true);
-  };
-
   const handleDelete = async (assignmentId) => {
-    if (!confirm('Вы уверены, что хотите удалить это задание?')) return;
-
     try {
       await apiClient.deleteAssignment(assignmentId);
       await loadData();
+      if (onStatsUpdate) onStatsUpdate();
     } catch (error) {
-      setError('Ошибка удаления задания: ' + error.message);
+      setError('Ошибка удаления: ' + error.message);
     }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      topic_id: '',
-      title: '',
-      description: '',
-      instructions: '',
-      max_score: 100,
-      due_date: ''
-    });
-    setEditingAssignment(null);
-    setError('');
-  };
-
-  const handleDialogClose = () => {
-    setIsDialogOpen(false);
-    resetForm();
   };
 
   const getTopicName = (topicId) => {
@@ -138,20 +74,7 @@ export const AssignmentManager = ({ onStatsUpdate }) => {
     if (assignment.is_overdue) {
       return { label: 'Просрочено', color: 'destructive' };
     }
-    if (assignment.due_date) {
-      const dueDate = new Date(assignment.due_date);
-      const now = new Date();
-      const daysLeft = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
-      
-      if (daysLeft < 0) {
-        return { label: 'Просрочено', color: 'destructive' };
-      } else if (daysLeft <= 3) {
-        return { label: `${daysLeft} дн.`, color: 'secondary' };
-      } else {
-        return { label: `${daysLeft} дн.`, color: 'outline' };
-      }
-    }
-    return { label: 'Без срока', color: 'outline' };
+    return { label: 'Активно', color: 'default' };
   };
 
   if (loading) {
@@ -174,128 +97,16 @@ export const AssignmentManager = ({ onStatsUpdate }) => {
           <p className="text-gray-600">Создавайте и редактируйте задания для учеников</p>
         </div>
         
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setIsDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Создать задание
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>
-                {editingAssignment ? 'Редактировать задание' : 'Создать новое задание'}
-              </DialogTitle>
-              <DialogDescription>
-                {editingAssignment 
-                  ? 'Внесите изменения в существующее задание'
-                  : 'Заполните информацию для создания нового задания'
-                }
-              </DialogDescription>
-            </DialogHeader>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="topic_id">Тема</Label>
-                <Select 
-                  value={formData.topic_id} 
-                  onValueChange={(value) => setFormData({ ...formData, topic_id: value })}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите тему" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {topics.map((topic) => (
-                      <SelectItem key={topic.id} value={topic.id.toString()}>
-                        {topic.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="title">Название задания</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Введите название задания"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Описание</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Краткое описание задания"
-                  rows={3}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="instructions">Инструкции</Label>
-                <Textarea
-                  id="instructions"
-                  value={formData.instructions}
-                  onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
-                  placeholder="Подробные инструкции для выполнения задания"
-                  rows={5}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="max_score">Максимальный балл</Label>
-                  <Input
-                    id="max_score"
-                    type="number"
-                    min="1"
-                    value={formData.max_score}
-                    onChange={(e) => setFormData({ ...formData, max_score: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="due_date">Срок сдачи (необязательно)</Label>
-                  <Input
-                    id="due_date"
-                    type="date"
-                    value={formData.due_date}
-                    onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={handleDialogClose}>
-                  Отмена
-                </Button>
-                <Button type="submit" disabled={formLoading}>
-                  {formLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {editingAssignment ? 'Сохранить изменения' : 'Создать задание'}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button 
+          onClick={() => navigate('/admin/assignments/create')}
+          className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Создать задание
+        </Button>
       </div>
 
-      {error && !isDialogOpen && (
+      {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
@@ -303,78 +114,104 @@ export const AssignmentManager = ({ onStatsUpdate }) => {
       )}
 
       {/* Assignments List */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {assignments.map((assignment) => {
           const status = getAssignmentStatus(assignment);
-          
           return (
-            <Card key={assignment.id}>
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {assignment.title}
-                      </h3>
-                      <Badge variant={status.color}>{status.label}</Badge>
+            <motion.div
+              key={assignment.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -5 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+            >
+              <Card className="h-full shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 rounded-xl overflow-hidden">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="bg-indigo-100 p-3 rounded-xl">
+                      <FileText className="h-6 w-6 text-indigo-600" />
                     </div>
-                    
-                    <p className="text-gray-600 mb-3">{assignment.description}</p>
-                    
-                    <div className="flex items-center space-x-6 text-sm text-gray-500">
-                      <span className="flex items-center">
-                        <FileText className="h-4 w-4 mr-1" />
-                        Тема: {getTopicName(assignment.topic_id)}
-                      </span>
-                      <span>Макс. балл: {assignment.max_score}</span>
-                      <span>Отправлено: {assignment.submissions_count || 0}</span>
-                      {assignment.due_date && (
-                        <span className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          {new Date(assignment.due_date).toLocaleDateString('ru-RU')}
-                        </span>
-                      )}
-                    </div>
+                    <Badge variant={status.color} className="text-xs">
+                      {status.label}
+                    </Badge>
                   </div>
+                  <CardTitle className="text-lg leading-tight mt-4 group-hover:text-indigo-600 transition-colors duration-300">
+                    {assignment.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <CardDescription className="text-base leading-relaxed mb-4">
+                    {assignment.description}
+                  </CardDescription>
                   
-                  <div className="flex space-x-2">
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(assignment)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={() => handleDelete(assignment.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Target className="h-4 w-4 mr-2" />
+                      <span>Макс. балл: {assignment.max_score}</span>
+                    </div>
+                    {assignment.due_date && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Clock className="h-4 w-4 mr-2" />
+                        <span>Срок: {new Date(assignment.due_date).toLocaleDateString('ru-RU')}</span>
+                      </div>
+                    )}
+                    <div className="text-sm text-gray-600">
+                      <span className="font-medium">Тема:</span> {getTopicName(assignment.topic_id)}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/admin/assignments/${assignment.id}/edit`)}
+                      className="flex-1"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Редактировать
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Удалить задание?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Это действие нельзя отменить. Задание будет удалено навсегда.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Отмена</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(assignment.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Удалить
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           );
         })}
       </div>
 
       {assignments.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Нет созданных заданий</h3>
-            <p className="text-gray-600 mb-4">
-              {topics.length === 0 
-                ? 'Сначала создайте тему, чтобы добавить к ней задания'
-                : 'Создайте первое задание для ваших учеников'
-              }
-            </p>
-            {topics.length > 0 && (
-              <Button onClick={() => setIsDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Создать первое задание
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-12"
+        >
+          <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+          <h3 className="text-xl font-medium text-gray-500 mb-2">Задания пока не созданы</h3>
+          <p className="text-gray-400">Создайте первое задание для учеников</p>
+        </motion.div>
       )}
     </div>
   );
