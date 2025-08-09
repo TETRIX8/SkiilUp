@@ -1,6 +1,5 @@
 // src/lib/api.js
 const API_BASE_URL = 'https://tetrixuno.duckdns.org/api';
-
 class ApiClient {
   constructor() {
     this.token = localStorage.getItem('token');
@@ -441,10 +440,28 @@ class ApiClient {
 
   async markAllAchievementsAsViewed() {
     return this.request('/achievements/mark-all-viewed', {
-      method: 'POST'
+      method: 'POST',
     });
   }
 
+  // GitHub Integration methods
+  async getGitHubStatus() {
+    return this.request('/github/status');
+  }
+
+  async getGitHubRepositories() {
+    return this.request('/github/repositories');
+  }
+
+  async disconnectGitHub() {
+    return this.request('/github/disconnect', {
+      method: 'POST',
+    });
+  }
+
+  async getGitHubStats() {
+    return this.request('/github/stats');
+  }
 }
 
 export const apiClient = new ApiClient();

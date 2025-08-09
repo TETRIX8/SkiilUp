@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -38,48 +38,22 @@ export const ProgressPage = () => {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
-
-  // Симуляция данных пользователя
-  const userStats = {
-    daily_streak: 5,
-    assignments_completed: 8,
-    perfect_scores: 3,
-    topics_completed: 7,
-    assignments_today: 2,
-    consistent_days: 3,
-    first_perfect: true,
-    early_submissions: 1,
-    helpful_comments: 2,
-    total_xp: 1250,
-    level: 8,
-    level_progress: 75,
-    total_assignments: 15,
-    total_topics: 12,
-    average_score: 4.2,
-    study_time: 45, // часы
-    weekly_progress: [
-      { day: 'Пн', completed: 2, total: 3 },
-      { day: 'Вт', completed: 1, total: 2 },
-      { day: 'Ср', completed: 3, total: 4 },
-      { day: 'Чт', completed: 0, total: 1 },
-      { day: 'Пт', completed: 2, total: 3 },
-      { day: 'Сб', completed: 1, total: 2 },
-      { day: 'Вс', completed: 0, total: 1 }
-    ]
-  };
+  const [userStats, setUserStats] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [topicsResponse, assignmentsResponse, submissionsResponse] = await Promise.all([
+        const [topicsResponse, assignmentsResponse, submissionsResponse, statsResponse] = await Promise.all([
           apiClient.getTopics(),
           apiClient.getAssignments(),
-          apiClient.getMySubmissions()
+          apiClient.getMySubmissions(),
+          apiClient.getUserStats()
         ]);
         setTopics(topicsResponse.topics || []);
         setAssignments(assignmentsResponse.assignments || []);
         setSubmissions(submissionsResponse.submissions || []);
+        if (statsResponse.success) setUserStats(statsResponse.stats);
       } catch (error) {
         console.error("Ошибка загрузки данных:", error);
       } finally {
@@ -105,6 +79,39 @@ export const ProgressPage = () => {
     if (percentage >= 70) return { color: 'bg-yellow-100 text-yellow-800', text: 'Удовлетворительно' };
     return { color: 'bg-red-100 text-red-800', text: 'Неудовлетворительно' };
   };
+
+  // Derived metrics
+  const totalAssignments = assignments.length;
+  const totalTopics = topics.length;
+  const gradedSubmissions = useMemo(() => submissions.filter(s => s.is_graded), [submissions]);
+  const averageScore = useMemo(() => {
+    if (gradedSubmissions.length === 0) return 0;
+    let sum = 0;
+    let count = 0;
+    for (const sub of gradedSubmissions) {
+      const a = assignments.find(x => x.id === sub.assignment_id);
+      const max = a?.max_score || 100;
+      if (max > 0 && sub.score != null) {
+        sum += (sub.score / max) * 100; // normalize to %
+        count += 1;
+      }
+    }
+    return count ? parseFloat((sum / count).toFixed(1)) : 0;
+  }, [gradedSubmissions, assignments]);
+
+  // Weekly progress from submissions by weekday
+  const weeklyProgress = useMemo(() => {
+    const days = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+    const counts = Array(7).fill(0);
+    for (const sub of submissions) {
+      if (sub.submitted_at) {
+        const d = new Date(sub.submitted_at);
+        counts[d.getDay()] += 1;
+      }
+    }
+    // Use average assignments per day target = 3
+    return days.map((day, i) => ({ day, completed: counts[i], total: 3 }));
+  }, [submissions]);
 
   if (loading) {
     return (
@@ -159,7 +166,11 @@ export const ProgressPage = () => {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Общий прогресс</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {Math.round((userStats.assignments_completed / userStats.total_assignments) * 100)}%
+                    {(() => {
+                      const completed = userStats?.assignments_completed || 0;
+                      const total = totalAssignments || 1;
+                      return Math.round((completed / total) * 100);
+                    })()}%
                   </p>
                 </div>
               </div>
@@ -174,7 +185,7 @@ export const ProgressPage = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Средний балл</p>
-                  <p className="text-2xl font-bold text-gray-900">{userStats.average_score}</p>
+                  <p className="text-2xl font-bold text-gray-900">{averageScore}%</p>
                 </div>
               </div>
             </CardContent>
@@ -187,8 +198,8 @@ export const ProgressPage = () => {
                   <Clock className="h-6 w-6 text-purple-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Время обучения</p>
-                  <p className="text-2xl font-bold text-gray-900">{userStats.study_time}ч</p>
+                  <p className="text-sm font-medium text-gray-500">Выполнено заданий</p>
+                  <p className="text-2xl font-bold text-gray-900">{userStats?.assignments_completed || 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -202,7 +213,7 @@ export const ProgressPage = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Дней подряд</p>
-                  <p className="text-2xl font-bold text-gray-900">{userStats.daily_streak}</p>
+                  <p className="text-2xl font-bold text-gray-900">{userStats?.daily_streak || 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -248,7 +259,7 @@ export const ProgressPage = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {userStats.weekly_progress.map((day, index) => (
+                      {weeklyProgress.map((day, index) => (
                         <div key={index} className="flex items-center justify-between">
                           <span className="text-sm font-medium text-gray-600">{day.day}</span>
                           <div className="flex items-center space-x-3">
@@ -324,7 +335,7 @@ export const ProgressPage = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {submissions.filter(s => s.is_graded).map((submission, index) => {
+                    {gradedSubmissions.map((submission, index) => {
                       const assignment = assignments.find(a => a.id === submission.assignment_id);
                       const gradeBadge = getGradeBadge(submission.score, assignment?.max_score || 100);
                       
@@ -435,7 +446,7 @@ export const ProgressPage = () => {
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">Общее время</span>
-                        <span className="font-medium">{userStats.study_time} часов</span>
+                        <span className="font-medium">{userStats?.study_time || 0} часов</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">Среднее в день</span>

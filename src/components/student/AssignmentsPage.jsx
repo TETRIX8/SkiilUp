@@ -42,9 +42,12 @@ export const AssignmentsPage = () => {
 
   const getAssignmentStatus = (assignment) => {
     const submission = getSubmissionForAssignment(assignment.id);
-    if (!submission) return { label: 'Не выполнено', color: 'secondary' };
-    if (submission.is_graded) return { label: 'Проверено', color: 'success' };
-    return { label: 'Отправлено', color: 'default' };
+    if (!submission) {
+      if (assignment.is_overdue) return { label: 'Просрочено', color: 'destructive' };
+      return { label: 'Ожидает выполнения', color: 'outline' };
+    }
+    if (submission.is_graded) return { label: 'Оценено', color: 'default' };
+    return { label: 'Отправлено', color: 'secondary' };
   };
 
   if (loading) {

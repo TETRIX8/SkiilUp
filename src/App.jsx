@@ -20,6 +20,8 @@ import Error404 from './pages/Error404';
 import { AKProjectBadge } from './components/ui/AKProjectBadge';
 import './App.css';
 import { AssignmentsPage } from './components/student/AssignmentsPage';
+import ResetPasswordPage from './components/auth/ResetPasswordPage';
+import WebGLIntro from './components/ui/WebGLIntro';
 
 function AppContent() {
   const { isAuthenticated, loading, user } = useAuth();
@@ -35,56 +37,56 @@ function AppContent() {
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <>
-        <AuthPage />
-        <AKProjectBadge />
-      </>
-    );
-  }
-
-  // Show admin routes for admins and teachers
-  if (user?.role === 'admin' || user?.role === 'teacher') {
-    return (
-      <>
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-          <Routes>
-            <Route path="/" element={<AdminDashboard />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/assignments/create" element={<CreateAssignmentPage />} />
-            <Route path="/admin/assignments/:id/edit" element={<EditAssignmentPage />} />
-            <Route path="/admin/assignments" element={<AdminDashboard />} />
-            <Route path="/admin/topics" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminDashboard />} />
-            <Route path="/admin/submissions" element={<AdminDashboard />} />
-            <Route path="*" element={<AdminDashboard />} />
-          </Routes>
-        </div>
-        <AKProjectBadge />
-      </>
-    );
-  }
-
-  // Show student routes with new dashboard
+  // Public route to allow password reset without auth
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <Routes>
-          <Route path="/" element={<StudentDashboard />} />
-          <Route path="/disciplines" element={<DisciplinesPage />} />
-          <Route path="/discipline/:disciplineId" element={<DisciplineDetail />} />
-          <Route path="/topics/:id" element={<TopicDetail />} />
-          <Route path="/assignments" element={<AssignmentsPage />} />
-          <Route path="/assignments/:id" element={<AssignmentDetail />} />
-          <Route path="/grades" element={<GradesPage />} />
-          <Route path="/achievements" element={<AchievementsPage />} />
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/progress" element={<ProgressPage />} />
-          <Route path="/community" element={<DisciplinesPage />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Profile />} />
-          <Route path="*" element={<Error404 />} />
+          {/* Public route for email link */}
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+          {/* If not authenticated, show auth landing */}
+          {!isAuthenticated && (
+            <>
+              <Route path="/" element={<AuthPage />} />
+              <Route path="*" element={<AuthPage />} />
+            </>
+          )}
+
+          {/* Admin routes */}
+          {isAuthenticated && (user?.role === 'admin' || user?.role === 'teacher') && (
+            <>
+              <Route path="/" element={<AdminDashboard />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/assignments/create" element={<CreateAssignmentPage />} />
+              <Route path="/admin/assignments/:id/edit" element={<EditAssignmentPage />} />
+              <Route path="/admin/assignments" element={<AdminDashboard />} />
+              <Route path="/admin/topics" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<AdminDashboard />} />
+              <Route path="/admin/submissions" element={<AdminDashboard />} />
+              <Route path="*" element={<AdminDashboard />} />
+            </>
+          )}
+
+          {/* Student routes */}
+          {isAuthenticated && !(user?.role === 'admin' || user?.role === 'teacher') && (
+            <>
+              <Route path="/" element={<StudentDashboard />} />
+              <Route path="/disciplines" element={<DisciplinesPage />} />
+              <Route path="/discipline/:disciplineId" element={<DisciplineDetail />} />
+              <Route path="/topics/:id" element={<TopicDetail />} />
+              <Route path="/assignments" element={<AssignmentsPage />} />
+              <Route path="/assignments/:id" element={<AssignmentDetail />} />
+              <Route path="/grades" element={<GradesPage />} />
+              <Route path="/achievements" element={<AchievementsPage />} />
+              <Route path="/calendar" element={<CalendarPage />} />
+              <Route path="/progress" element={<ProgressPage />} />
+              <Route path="/community" element={<DisciplinesPage />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Profile />} />
+              <Route path="*" element={<Error404 />} />
+            </>
+          )}
         </Routes>
       </div>
       <AKProjectBadge />
@@ -95,6 +97,7 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
+      <WebGLIntro />
       <AppContent />
     </AuthProvider>
   );

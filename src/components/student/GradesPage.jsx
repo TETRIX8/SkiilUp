@@ -59,7 +59,19 @@ export const GradesPage = () => {
   const totalAssignments = assignments.length;
   const completedAssignments = gradedSubmissions.length;
   const averageScore = gradedSubmissions.length > 0 
-    ? (gradedSubmissions.reduce((sum, s) => sum + s.score, 0) / gradedSubmissions.length).toFixed(1)
+    ? (() => {
+        let sumPct = 0;
+        let count = 0;
+        for (const s of gradedSubmissions) {
+          const a = assignments.find(x => x.id === s.assignment_id);
+          const max = a?.max_score || 100;
+          if (max > 0 && s.score != null) {
+            sumPct += (s.score / max) * 100;
+            count += 1;
+          }
+        }
+        return count ? (sumPct / count).toFixed(1) : 0;
+      })()
     : 0;
 
   const getGradeColor = (score, maxScore) => {
@@ -86,8 +98,18 @@ export const GradesPage = () => {
     
     if (topicSubmissions.length === 0) return { progress: 0, average: 0 };
     
-    const progress = (topicSubmissions.length / topicAssignments.length) * 100;
-    const average = topicSubmissions.reduce((sum, s) => sum + s.score, 0) / topicSubmissions.length;
+    const progress = topicAssignments.length > 0 ? (topicSubmissions.length / topicAssignments.length) * 100 : 0;
+    let sumPct = 0;
+    let count = 0;
+    for (const s of topicSubmissions) {
+      const a = topicAssignments.find(x => x.id === s.assignment_id);
+      const max = a?.max_score || 100;
+      if (max > 0 && s.score != null) {
+        sumPct += (s.score / max) * 100;
+        count += 1;
+      }
+    }
+    const average = count ? sumPct / count : 0;
     
     return { progress, average: average.toFixed(1) };
   };
@@ -163,7 +185,7 @@ export const GradesPage = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Средний балл</p>
-                  <p className="text-2xl font-bold text-gray-900">{averageScore}</p>
+                  <p className="text-2xl font-bold text-gray-900">{averageScore}%</p>
                 </div>
               </div>
             </CardContent>
@@ -259,7 +281,7 @@ export const GradesPage = () => {
                           <div className="w-20 bg-gray-200 rounded-full h-2">
                             <div 
                               className="bg-green-500 h-2 rounded-full"
-                              style={{ width: `${(gradeDistribution.excellent / gradedSubmissions.length) * 100}%` }}
+                              style={{ width: `${gradedSubmissions.length ? (gradeDistribution.excellent / gradedSubmissions.length) * 100 : 0}%` }}
                             />
                           </div>
                           <span className="font-medium text-green-600">{gradeDistribution.excellent}</span>
@@ -271,7 +293,7 @@ export const GradesPage = () => {
                           <div className="w-20 bg-gray-200 rounded-full h-2">
                             <div 
                               className="bg-blue-500 h-2 rounded-full"
-                              style={{ width: `${(gradeDistribution.good / gradedSubmissions.length) * 100}%` }}
+                              style={{ width: `${gradedSubmissions.length ? (gradeDistribution.good / gradedSubmissions.length) * 100 : 0}%` }}
                             />
                           </div>
                           <span className="font-medium text-blue-600">{gradeDistribution.good}</span>
@@ -283,7 +305,7 @@ export const GradesPage = () => {
                           <div className="w-20 bg-gray-200 rounded-full h-2">
                             <div 
                               className="bg-yellow-500 h-2 rounded-full"
-                              style={{ width: `${(gradeDistribution.satisfactory / gradedSubmissions.length) * 100}%` }}
+                              style={{ width: `${gradedSubmissions.length ? (gradeDistribution.satisfactory / gradedSubmissions.length) * 100 : 0}%` }}
                             />
                           </div>
                           <span className="font-medium text-yellow-600">{gradeDistribution.satisfactory}</span>
@@ -295,7 +317,7 @@ export const GradesPage = () => {
                           <div className="w-20 bg-gray-200 rounded-full h-2">
                             <div 
                               className="bg-red-500 h-2 rounded-full"
-                              style={{ width: `${(gradeDistribution.poor / gradedSubmissions.length) * 100}%` }}
+                              style={{ width: `${gradedSubmissions.length ? (gradeDistribution.poor / gradedSubmissions.length) * 100 : 0}%` }}
                             />
                           </div>
                           <span className="font-medium text-red-600">{gradeDistribution.poor}</span>
@@ -448,7 +470,7 @@ export const GradesPage = () => {
                             <h4 className="font-semibold text-gray-900">{topic.title}</h4>
                             <div className="flex items-center space-x-4">
                               <span className="text-sm text-gray-500">
-                                Средний балл: <span className="font-medium text-blue-600">{average}</span>
+                                Средний результат: <span className="font-medium text-blue-600">{average}%</span>
                               </span>
                             </div>
                           </div>

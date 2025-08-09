@@ -144,17 +144,17 @@ export const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="bg-primary rounded-full p-2">
-                <GraduationCap className="h-6 w-6 text-primary-foreground" />
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-2 shadow-sm">
+                <GraduationCap className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">
+                <h1 className="text-xl font-bold text-gray-900">
                   Административная панель
                 </h1>
                 <p className="text-sm text-gray-500">
@@ -169,7 +169,7 @@ export const AdminDashboard = () => {
                   {user?.first_name} {user?.last_name}
                 </span>
               </div>
-              <Button variant="outline" size="sm" onClick={logout}>
+              <Button variant="outline" size="sm" onClick={logout} className="hover:bg-red-50">
                 <LogOut className="h-4 w-4 mr-2" />
                 Выйти
               </Button>
@@ -181,7 +181,7 @@ export const AdminDashboard = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {error && (
-          <Alert variant="destructive" className="mb-6">
+          <Alert variant="destructive" className="mb-6 shadow-sm">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
@@ -189,7 +189,7 @@ export const AdminDashboard = () => {
 
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-2">
             Добро пожаловать, {user?.first_name}!
           </h2>
           <p className="text-gray-600">
@@ -199,54 +199,46 @@ export const AdminDashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <BookOpen className="h-8 w-8 text-blue-500" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Темы</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.topics}</p>
+          {[{
+            icon: BookOpen,
+            color: 'from-blue-500 to-indigo-600',
+            label: 'Темы',
+            value: stats.topics
+          },{
+            icon: FileText,
+            color: 'from-green-500 to-emerald-600',
+            label: 'Задания',
+            value: stats.assignments
+          },{
+            icon: CheckCircle,
+            color: 'from-purple-500 to-fuchsia-600',
+            label: 'Отправлено работ',
+            value: stats.submissions
+          },{
+            icon: Users,
+            color: 'from-amber-500 to-orange-600',
+            label: 'Активные ученики',
+            value: stats.students
+          }].map(({icon:Icon,color,label,value}, idx) => (
+            <Card key={idx} className="shadow-sm border border-gray-100/60 bg-white/70 backdrop-blur">
+              <CardContent className="p-5">
+                <div className="flex items-center">
+                  <div className={`p-3 rounded-xl bg-gradient-to-br ${color} text-white shadow`}></div>
+                  <div className="-ml-9 flex items-center">
+                    <Icon className="h-6 w-6 text-white relative ml-3" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">{label}</p>
+                      <p className="text-2xl font-bold text-gray-900">{value}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <FileText className="h-8 w-8 text-green-500" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Задания</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.assignments}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <CheckCircle className="h-8 w-8 text-purple-500" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Отправлено работ</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.submissions}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-orange-500" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Активные ученики</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.students}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* --- СЕКЦИЯ РЕЗЕРВНОГО КОПИРОВАНИЯ --- */}
-        <Card className="mb-8">
+        <Card className="mb-8 shadow-sm border border-gray-100/60 bg-white/80 backdrop-blur">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Database className="h-5 w-5" />
@@ -259,7 +251,7 @@ export const AdminDashboard = () => {
           <CardContent>
             {/* Ошибки резервного копирования */}
             {backupError && (
-              <Alert variant="destructive" className="mb-4">
+              <Alert variant="destructive" className="mb-4 shadow-sm">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{backupError}</AlertDescription>
               </Alert>
@@ -267,7 +259,7 @@ export const AdminDashboard = () => {
 
             {/* Ошибки восстановления */}
             {restoreError && (
-              <Alert variant="destructive" className="mb-4">
+              <Alert variant="destructive" className="mb-4 shadow-sm">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>{restoreError}</AlertDescription>
               </Alert>
@@ -275,7 +267,7 @@ export const AdminDashboard = () => {
 
             {/* Сообщения об успехе восстановления */}
             {restoreSuccess && (
-              <Alert className="mb-4 bg-green-50 border-green-200">
+              <Alert className="mb-4 bg-green-50 border-green-200 shadow-sm">
                 <AlertCircle className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-800">{restoreSuccess}</AlertDescription>
               </Alert>
@@ -283,7 +275,7 @@ export const AdminDashboard = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Карточка создания резервной копии */}
-              <Card>
+              <Card className="border border-gray-100/60">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Download className="h-5 w-5" />
@@ -315,7 +307,7 @@ export const AdminDashboard = () => {
               </Card>
 
               {/* Карточка восстановления из резервной копии */}
-              <Card>
+              <Card className="border border-gray-100/60">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Upload className="h-5 w-5" />
@@ -386,15 +378,14 @@ export const AdminDashboard = () => {
             </div>
           </CardContent>
         </Card>
-        {/* -------------------------------------------------- */}
 
         {/* Management Tabs */}
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="users">Управление пользователями</TabsTrigger>
-            <TabsTrigger value="topics">Управление темами</TabsTrigger>
-            <TabsTrigger value="assignments">Управление заданиями</TabsTrigger>
-            <TabsTrigger value="submissions">Проверка работ</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 bg-white/70 backdrop-blur shadow-inner">
+            <TabsTrigger value="users" className="data-[state=active]:shadow data-[state=active]:border">Управление пользователями</TabsTrigger>
+            <TabsTrigger value="topics" className="data-[state=active]:shadow data-[state=active]:border">Управление темами</TabsTrigger>
+            <TabsTrigger value="assignments" className="data-[state=active]:shadow data-[state=active]:border">Управление заданиями</TabsTrigger>
+            <TabsTrigger value="submissions" className="data-[state=active]:shadow data-[state=active]:border">Проверка работ</TabsTrigger>
           </TabsList>
           <TabsContent value="users">
             <UserApprovalManager onStatsUpdate={loadStats} />
