@@ -1,5 +1,5 @@
 // src/lib/api.js
-const API_BASE_URL = 'https://tetrixuno.duckdns.org/api';
+const API_BASE_URL = 'https://tetrixuno.ddns.net/api';
 class ApiClient {
   constructor() {
     this.token = localStorage.getItem('token');
