@@ -1,5 +1,10 @@
 // src/lib/api.js
-const API_BASE_URL = 'https://tetrixuno.ddns.net/api';
+const API_BASE_HOST = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BACKEND_URL)
+	? import.meta.env.VITE_BACKEND_URL
+	: ((typeof process !== 'undefined' && process.env && process.env.REACT_APP_BACKEND_URL)
+		? process.env.REACT_APP_BACKEND_URL
+		: 'https://tetrixuno.ddns.net');
+const API_BASE_URL = `${API_BASE_HOST}/api`;
 class ApiClient {
   constructor() {
     this.token = localStorage.getItem('token');

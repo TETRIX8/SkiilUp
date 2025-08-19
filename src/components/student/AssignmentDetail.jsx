@@ -91,9 +91,13 @@ export const AssignmentDetail = () => {
       formData.append('file', file);
       formData.append('assignment_id', id);
 
-      const API_BASE_URL = 'https://tetrixuno.duckdns.org';
+      const API_BASE_HOST = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BACKEND_URL)
+      	? import.meta.env.VITE_BACKEND_URL
+      	: ((typeof process !== 'undefined' && process.env && process.env.REACT_APP_BACKEND_URL)
+      		? process.env.REACT_APP_BACKEND_URL
+      		: 'https://tetrixuno.ddns.net');
 
-      const response = await fetch(`${API_BASE_URL}/api/files/upload`, {
+      const response = await fetch(`${API_BASE_HOST}/api/files/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -133,8 +137,12 @@ export const AssignmentDetail = () => {
   };
 
   const handleDownloadFile = (filePath, fileName) => {
-    const API_BASE_URL ='https://tetrixuno.duckdns.org';
-    const downloadUrl = `${API_BASE_URL}/api/files/download/${filePath}`;
+    const API_BASE_HOST = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BACKEND_URL)
+    	? import.meta.env.VITE_BACKEND_URL
+    	: ((typeof process !== 'undefined' && process.env && process.env.REACT_APP_BACKEND_URL)
+    		? process.env.REACT_APP_BACKEND_URL
+    		: 'https://tetrixuno.ddns.net');
+    const downloadUrl = `${API_BASE_HOST}/api/files/download/${filePath}`;
 
     fetch(downloadUrl, {
       headers: {

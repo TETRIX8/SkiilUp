@@ -1,70 +1,87 @@
-# Getting Started with Create React App
+# SkiilUp Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Образовательная платформа для студентов и преподавателей.
 
-## Available Scripts
+## 🚀 Быстрый старт
 
-In the project directory, you can run:
+### Локальная разработка
 
-### `npm start`
+```bash
+# Установка зависимостей
+npm install
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+# Запуск в режиме разработки
+npm run dev
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Приложение будет доступно по адресу [http://localhost:3000](http://localhost:3000)
 
-### `npm test`
+### Сборка для продакшена
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+npm run build
+```
 
-### `npm run build`
+## ⚙️ Конфигурация
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Переменные окружения
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Создайте файл `.env` в корне проекта:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+# .env
+VITE_BACKEND_URL=https://tetrixuno.ddns.net
+```
 
-### `npm run eject`
+### Деплой на Vercel
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. **Подключите репозиторий к Vercel**
+2. **Настройте переменные окружения в Vercel Dashboard:**
+   - `VITE_BACKEND_URL` = `https://tetrixuno.ddns.net`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. **Деплой автоматически запустится при пуше в main ветку**
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Альтернативный способ настройки переменных
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Можно также добавить переменные в файл `vercel.json`:
 
-## Learn More
+```json
+{
+  "env": {
+    "VITE_BACKEND_URL": "https://tetrixuno.ddns.net"
+  }
+}
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 📁 Структура проекта
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+src/
+├── components/     # React компоненты
+├── contexts/       # React контексты
+├── lib/           # Утилиты и API клиент
+└── pages/         # Страницы приложения
+```
 
-### Code Splitting
+## 🔧 Доступные скрипты
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- `npm run dev` - Запуск в режиме разработки
+- `npm run build` - Сборка для продакшена
+- `npm run preview` - Предварительный просмотр сборки
+- `npm run lint` - Проверка кода
 
-### Analyzing the Bundle Size
+## 🌐 API
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Приложение использует REST API для взаимодействия с бэкендом:
+- Авторизация и регистрация
+- Управление дисциплинами и темами
+- Загрузка и скачивание файлов
+- Система достижений
 
-### Making a Progressive Web App
+## 🛠️ Технологии
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- **React 19** - Основной фреймворк
+- **Vite** - Сборщик и dev сервер
+- **Tailwind CSS** - Стилизация
+- **React Router** - Маршрутизация
+- **Framer Motion** - Анимации

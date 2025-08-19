@@ -12,8 +12,15 @@ export default defineConfig({
     },
   },
   define: {
-    'process.env': {
-      REACT_APP_BACKEND_URL: JSON.stringify(process.env.REACT_APP_BACKEND_URL || 'https://29277d95-378d-4981-95d0-550dfc73e43a.preview.emergentagent.com')
+    'import.meta.env.VITE_BACKEND_URL': JSON.stringify(process.env.VITE_BACKEND_URL || 'https://tetrixuno.ddns.net')
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: `assets/[name]-[hash].js`,
+        chunkFileNames: `assets/[name]-[hash].js`,
+        assetFileNames: `assets/[name]-[hash].[ext]`
+      }
     }
   },
   server: {
