@@ -136,7 +136,7 @@ export const AssignmentDetail = () => {
     }
   };
 
-  const handleDownloadFile = (filePath, fileName) => {
+  const handleDownloadFile = async (filePath, fileName) => {
     const API_BASE_HOST = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BACKEND_URL)
     	? import.meta.env.VITE_BACKEND_URL
     	: ((typeof process !== 'undefined' && process.env && process.env.REACT_APP_BACKEND_URL)
@@ -144,28 +144,52 @@ export const AssignmentDetail = () => {
     		: 'https://tetrixuno.ddns.net');
     const downloadUrl = `${API_BASE_HOST}/api/files/download/${filePath}`;
 
-    fetch(downloadUrl, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+    try {
+      setError(''); // Clear previous errors
+      
+      const response = await fetch(downloadUrl, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Ошибка ${response.status}: ${response.statusText}`);
       }
-    })
-    .then(response => {
-      if (!response.ok) throw new Error('Файл не найден или доступ запрещён');
-      return response.blob();
-    })
-    .then(blob => {
+
+      // Check if response has content
+      const contentLength = response.headers.get('content-length');
+      if (contentLength === '0') {
+        throw new Error('Файл пустой или поврежден');
+      }
+
+      const blob = await response.blob();
+      
+      // Check if blob is empty
+      if (blob.size === 0) {
+        throw new Error('Файл пустой или поврежден');
+      }
+
+      // Create download link
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = fileName;
+      a.download = fileName || 'download';
+      a.style.display = 'none';
+      
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      
+      // Clean up
       window.URL.revokeObjectURL(url);
-    })
-    .catch(error => {
+      
+      setSuccess('Файл успешно скачан!');
+    } catch (error) {
+      console.error('Download error:', error);
       setError('Ошибка скачивания файла: ' + error.message);
-    });
+    }
   };
 
   const handleSubmit = async (e) => {
