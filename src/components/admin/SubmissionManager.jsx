@@ -118,6 +118,25 @@ export const SubmissionManager = ({ onStatsUpdate }) => {
     
     try {
       setError(''); // Clear previous errors
+      setSuccess('Начинаю скачивание файла...');
+      
+      // Сначала проверяем целостность файла
+      const verifyUrl = `${API_BASE_HOST}/api/files/verify/${filePath}`;
+      const verifyResponse = await fetch(verifyUrl, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (verifyResponse.ok) {
+        const verifyData = await verifyResponse.json();
+        if (!verifyData.is_valid) {
+          throw new Error(`Файл поврежден: ${verifyData.message}`);
+        }
+        console.log('File verification passed:', verifyData);
+      } else {
+        console.warn('File verification failed, proceeding with download anyway');
+      }
       
       const response = await fetch(downloadUrl, {
         headers: {
@@ -136,11 +155,40 @@ export const SubmissionManager = ({ onStatsUpdate }) => {
         throw new Error('Файл пустой или поврежден');
       }
 
-      const blob = await response.blob();
+      // Проверяем, что файл действительно скачивается
+      const reader = response.body.getReader();
+      let receivedLength = 0;
+      const chunks = [];
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) break;
+        
+        chunks.push(value);
+        receivedLength += value.length;
+        
+        // Показываем прогресс для больших файлов
+        if (contentLength && contentLength > 1024 * 1024) { // > 1MB
+          const progress = Math.round((receivedLength / contentLength) * 100);
+          setSuccess(`Скачивание: ${progress}%`);
+        }
+      }
+      
+      // Собираем файл из чанков
+      const blob = new Blob(chunks);
       
       // Check if blob is empty
       if (blob.size === 0) {
         throw new Error('Файл пустой или поврежден');
+      }
+      
+      // Проверяем размер скачанного файла
+      if (contentLength && blob.size !== parseInt(contentLength)) {
+        console.warn(`Size mismatch: expected ${contentLength}, got ${blob.size}`);
+        if (blob.size < parseInt(contentLength) * 0.9) { // Если скачалось меньше 90%
+          throw new Error('Файл скачан не полностью. Попробуйте еще раз.');
+        }
       }
 
       // Create download link
@@ -158,11 +206,12 @@ export const SubmissionManager = ({ onStatsUpdate }) => {
       window.URL.revokeObjectURL(url);
       
       // Show success message
-      setSuccess('Файл успешно скачан!');
-      setTimeout(() => setSuccess(''), 3000);
+      setSuccess(`Файл успешно скачан! Размер: ${(blob.size / (1024 * 1024)).toFixed(2)} MB`);
+      setTimeout(() => setSuccess(''), 5000);
     } catch (error) {
       console.error('Download error:', error);
       setError('Ошибка скачивания файла: ' + error.message);
+      setSuccess(''); // Очищаем сообщение об успехе
     }
   };
 
