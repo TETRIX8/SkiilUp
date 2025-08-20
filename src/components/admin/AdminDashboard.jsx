@@ -43,11 +43,14 @@ export const AdminDashboard = () => {
 
   // Состояния для резервного копирования
   const [backupLoading, setBackupLoading] = useState(false);
-  const [restoreLoading, setRestoreLoading] = useState(false);
   const [backupError, setBackupError] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [restoreLoading, setRestoreLoading] = useState(false);
   const [restoreError, setRestoreError] = useState('');
   const [restoreSuccess, setRestoreSuccess] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [verifyResults, setVerifyResults] = useState(null);
+  const [verifyError, setVerifyError] = useState('');
 
   useEffect(() => {
     loadStats();
@@ -129,6 +132,40 @@ export const AdminDashboard = () => {
       setRestoreError(err.message || 'Failed to restore database');
     } finally {
       setRestoreLoading(false);
+    }
+  };
+
+  const handleVerifyFiles = async () => {
+    setVerifyLoading(true);
+    setVerifyError('');
+    setVerifyResults(null);
+
+    try {
+      const API_BASE_HOST = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BACKEND_URL)
+        ? import.meta.env.VITE_BACKEND_URL
+        : ((typeof process !== 'undefined' && process.env && process.env.REACT_APP_BACKEND_URL)
+          ? process.env.REACT_APP_BACKEND_URL
+          : 'https://tetrixuno.ddns.net');
+
+      const response = await fetch(`${API_BASE_HOST}/api/files/verify-all`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to verify files');
+      }
+
+      const results = await response.json();
+      setVerifyResults(results);
+      console.log('File verification results:', results);
+    } catch (err) {
+      console.error("File verification failed:", err);
+      setVerifyError(err.message || 'Failed to verify files');
+    } finally {
+      setVerifyLoading(false);
     }
   };
 
@@ -345,21 +382,114 @@ export const AdminDashboard = () => {
                     </div>
                     <Button
                       onClick={handleRestore}
-                      disabled={restoreLoading || !selectedFile}
+                      disabled={!selectedFile || restoreLoading}
                       className="w-full"
                     >
                       {restoreLoading ? (
                         <>
-                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                          Восстановление...
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Восстанавливаю...
                         </>
                       ) : (
-                        <>
-                          <Upload className="mr-2 h-4 w-4" />
-                          Восстановить базу данных
-                        </>
+                        'Восстановить базу данных'
                       )}
                     </Button>
+                    {restoreError && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>{restoreError}</AlertDescription>
+                      </Alert>
+                    )}
+                    {restoreSuccess && (
+                      <Alert>
+                        <CheckCircle className="h-4 w-4" />
+                        <AlertDescription>{restoreSuccess}</AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Карточка проверки целостности файлов */}
+              <Card className="border border-gray-100/60">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <CheckCircle className="h-5 w-5" />
+                    Проверить целостность файлов
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    Проверьте целостность всех загруженных файлов в системе.
+                  </p>
+                  <div className="space-y-4">
+                    <Button
+                      onClick={handleVerifyFiles}
+                      disabled={verifyLoading}
+                      className="w-full"
+                    >
+                      {verifyLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Проверяю...
+                        </>
+                      ) : (
+                        'Проверить все файлы'
+                      )}
+                    </Button>
+                    
+                    {verifyError && (
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>{verifyError}</AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    {verifyResults && (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-3 gap-4 text-sm">
+                          <div className="text-center p-3 bg-green-50 rounded-lg">
+                            <div className="text-2xl font-bold text-green-600">{verifyResults.valid_files}</div>
+                            <div className="text-green-700">Целые файлы</div>
+                          </div>
+                          <div className="text-center p-3 bg-red-50 rounded-lg">
+                            <div className="text-2xl font-bold text-red-600">{verifyResults.invalid_files}</div>
+                            <div className="text-red-700">Поврежденные</div>
+                          </div>
+                          <div className="text-center p-3 bg-blue-50 rounded-lg">
+                            <div className="text-2xl font-bold text-blue-600">{verifyResults.total_size_mb}</div>
+                            <div className="text-blue-700">МБ всего</div>
+                          </div>
+                        </div>
+                        
+                        {verifyResults.invalid_files > 0 && (
+                          <Alert variant="destructive">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>
+                              Обнаружено {verifyResults.invalid_files} поврежденных файлов. 
+                              Рекомендуется выполнить очистку.
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                        
+                        <details className="text-sm">
+                          <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
+                            Показать детали проверки
+                          </summary>
+                          <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
+                            {verifyResults.results.map((result, index) => (
+                              <div key={index} className={`p-2 rounded text-xs ${
+                                result.is_valid ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                              }`}>
+                                <div className="font-medium">{result.filename}</div>
+                                <div>{result.message}</div>
+                                {result.size > 0 && <div>Размер: {(result.size / 1024).toFixed(1)} KB</div>}
+                              </div>
+                            ))}
+                          </div>
+                        </details>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
