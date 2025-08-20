@@ -108,28 +108,62 @@ export const SubmissionManager = ({ onStatsUpdate }) => {
     return { label: 'Ожидает проверки', color: 'secondary', icon: Clock };
   };
 
-  const handleDownloadFile = (filePath, fileName) => {
-    const downloadUrl = `/api/files/download/${filePath}`;
+  const handleDownloadFile = async (filePath, fileName) => {
+    const API_BASE_HOST = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BACKEND_URL)
+    	? import.meta.env.VITE_BACKEND_URL
+    	: ((typeof process !== 'undefined' && process.env && process.env.REACT_APP_BACKEND_URL)
+    		? process.env.REACT_APP_BACKEND_URL
+    		: 'https://tetrixuno.ddns.net');
+    const downloadUrl = `${API_BASE_HOST}/api/files/download/${filePath}`;
     
-    fetch(downloadUrl, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+    try {
+      setError(''); // Clear previous errors
+      
+      const response = await fetch(downloadUrl, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Ошибка ${response.status}: ${response.statusText}`);
       }
-    })
-    .then(response => response.blob())
-    .then(blob => {
+
+      // Check if response has content
+      const contentLength = response.headers.get('content-length');
+      if (contentLength === '0') {
+        throw new Error('Файл пустой или поврежден');
+      }
+
+      const blob = await response.blob();
+      
+      // Check if blob is empty
+      if (blob.size === 0) {
+        throw new Error('Файл пустой или поврежден');
+      }
+
+      // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = fileName;
+      link.download = fileName || 'download';
+      link.style.display = 'none';
+      
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // Clean up
       window.URL.revokeObjectURL(url);
-    })
-    .catch(error => {
+      
+      // Show success message
+      setSuccess('Файл успешно скачан!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (error) {
+      console.error('Download error:', error);
       setError('Ошибка скачивания файла: ' + error.message);
-    });
+    }
   };
 
   const filterSubmissions = (filter) => {
