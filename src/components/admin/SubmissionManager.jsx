@@ -114,14 +114,14 @@ export const SubmissionManager = ({ onStatsUpdate }) => {
     	: ((typeof process !== 'undefined' && process.env && process.env.REACT_APP_BACKEND_URL)
     		? process.env.REACT_APP_BACKEND_URL
     		: 'https://tetrixuno.ddns.net');
-    const downloadUrl = `${API_BASE_HOST}/api/files/download/${filePath}`;
+    const downloadUrl = `https://tetrixuno.ddns.net/api/files/download/${filePath}`;
     
     try {
       setError(''); // Clear previous errors
       setSuccess('Начинаю скачивание файла...');
       
       // Сначала проверяем целостность файла
-      const verifyUrl = `${API_BASE_HOST}/api/files/verify/${filePath}`;
+      const verifyUrl = `https://tetrixuno.ddns.net/api/files/verify/${filePath}`;
       const verifyResponse = await fetch(verifyUrl, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
