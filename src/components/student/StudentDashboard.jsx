@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -119,9 +119,41 @@ export const StudentDashboard = () => {
     return { status: 'pending', label: 'Ожидает выполнения', color: 'outline' };
   }, [getSubmissionForAssignment]);
 
-  const recentAssignments = assignments.slice(0, 3);
+  const recentAssignments = assignments.filter(a => {
+    const s = getSubmissionForAssignment(a.id);
+    return !s || !s.is_graded;
+  }).slice(0, 3);
   const recentTopics = topics.slice(0, 3);
   const recentGrades = submissions.filter(s => s.is_graded).slice(0, 3);
+
+  const uniqueSubmissions = useMemo(() => {
+    const seen = new Set();
+    return submissions.filter(s => {
+      if (seen.has(s.assignment_id)) return false;
+      seen.add(s.assignment_id);
+      return true;
+    });
+  }, [submissions]);
+
+  const completedCount = uniqueSubmissions.length;
+
+  const assignmentsToday = useMemo(() => {
+    const now = new Date();
+    const isSameDay = (d1, d2) => (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+    const seenToday = new Set();
+    return submissions.filter(s => {
+      if (!s.submitted_at) return false;
+      const d = new Date(s.submitted_at);
+      if (!isSameDay(d, now)) return false;
+      if (seenToday.has(s.assignment_id)) return false;
+      seenToday.add(s.assignment_id);
+      return true;
+    }).length;
+  }, [submissions]);
 
   if (loading) {
     return (
@@ -289,7 +321,7 @@ export const StudentDashboard = () => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-500">Заданий выполнено</p>
-                    <p className="text-2xl font-bold text-gray-900">{userStats?.assignments_completed || 0}</p>
+                    <p className="text-2xl font-bold text-gray-900">{completedCount}</p>
                   </div>
                 </div>
               </CardContent>
@@ -509,9 +541,9 @@ export const StudentDashboard = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Заданий сегодня</span>
-                    <span className="font-medium">{userStats?.assignments_today || 0}/3</span>
+                    <span className="font-medium">{assignmentsToday}/3</span>
                   </div>
-                  <Progress value={((userStats?.assignments_today || 0) / 3) * 100} className="h-2" />
+                  <Progress value={(assignmentsToday / 3) * 100} className="h-2" />
                   
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Дней подряд</span>
