@@ -17,7 +17,9 @@ import {
   FileText,
   BookOpen,
   Stars,
-  Zap
+  Zap,
+  Folder,
+  ExternalLink
 } from 'lucide-react';
 
 export const CommunityPage = () => {
@@ -55,6 +57,18 @@ export const CommunityPage = () => {
     { id: 'feat-achievements', title: 'Достижения', description: 'Серия наград и прогресс.', icon: Trophy, color: 'from-pink-500 to-rose-600' },
     { id: 'feat-performance', title: 'Быстрая работа', description: 'Современная UI-анимация и плавность.', icon: Zap, color: 'from-cyan-500 to-sky-600' },
     { id: 'feat-quality', title: 'Надёжность', description: 'Безопасность и стабильность.', icon: ShieldCheck, color: 'from-slate-600 to-gray-700' },
+  ];
+
+  const repoRoot = 'https://github.com/TETRIX8/SkiilUp';
+  const repoFiles = [
+    { name: 'src', type: 'dir', url: `${repoRoot}/tree/main/src` },
+    { name: 'public', type: 'dir', url: `${repoRoot}/tree/main/public` },
+    { name: 'dist', type: 'dir', url: `${repoRoot}/tree/main/dist` },
+    { name: 'README.md', type: 'file', url: `${repoRoot}/blob/main/README.md` },
+    { name: 'package.json', type: 'file', url: `${repoRoot}/blob/main/package.json` },
+    { name: 'vite.config.js', type: 'file', url: `${repoRoot}/blob/main/vite.config.js` },
+    { name: 'tailwind.config.js', type: 'file', url: `${repoRoot}/blob/main/tailwind.config.js` },
+    { name: 'vercel.json', type: 'file', url: `${repoRoot}/blob/main/vercel.json` },
   ];
 
   const formatDate = (iso) => new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -121,7 +135,7 @@ export const CommunityPage = () => {
             </Card>
           </motion.div>
 
-          {/* Features */}
+          {/* Features and GitHub */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <Card className="shadow-lg rounded-2xl overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
@@ -147,6 +161,47 @@ export const CommunityPage = () => {
                     );
                   })}
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* GitHub repo section */}
+            <Card className="shadow-lg rounded-2xl overflow-hidden mt-6">
+              <CardHeader className="bg-gradient-to-r from-gray-700 to-gray-900 text-white">
+                <CardTitle className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-2">
+                    <GitBranch className="h-5 w-5" /> Код на GitHub
+                  </span>
+                  <a href={repoRoot} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-medium underline decoration-white/50">
+                    Открыть репозиторий
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-2">
+                  {repoFiles.map((item) => (
+                    <a
+                      key={item.url}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
+                    >
+                      <span className="inline-flex items-center gap-3 text-sm font-medium text-gray-800">
+                        {item.type === 'dir' ? (
+                          <Folder className="h-4 w-4 text-indigo-600" />
+                        ) : (
+                          <FileText className="h-4 w-4 text-indigo-600" />
+                        )}
+                        {item.name}
+                      </span>
+                      <ExternalLink className="h-4 w-4 text-gray-500" />
+                    </a>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-3">
+                  Ссылка на репозиторий: {repoRoot}
+                </p>
               </CardContent>
             </Card>
           </motion.div>

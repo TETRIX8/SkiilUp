@@ -96,29 +96,12 @@ const navigationItems = [
     label: 'Сообщество',
     icon: Users,
     path: '/community',
-    description: 'Общение с однокурсниками'
+    description: 'Сообщество сайта'
   }
 ];
 
 const quickActions = [
-  {
-    id: 'notifications',
-    label: 'Уведомления',
-    icon: Bell,
-    action: () => console.log('Notifications')
-  },
-  {
-    id: 'search',
-    label: 'Поиск',
-    icon: Search,
-    action: () => console.log('Search')
-  },
-  {
-    id: 'help',
-    label: 'Помощь',
-    icon: HelpCircle,
-    action: () => console.log('Help')
-  }
+ 
 ];
 
 export const StudentNavigation = () => {
