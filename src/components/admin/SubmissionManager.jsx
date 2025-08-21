@@ -27,6 +27,7 @@ export const SubmissionManager = ({ onStatsUpdate }) => {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isGradeDialogOpen, setIsGradeDialogOpen] = useState(false);
   const [gradingSubmission, setGradingSubmission] = useState(null);
   const [gradeData, setGradeData] = useState({
@@ -109,19 +110,17 @@ export const SubmissionManager = ({ onStatsUpdate }) => {
   };
 
   const handleDownloadFile = async (filePath, fileName) => {
-    const API_BASE_HOST = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BACKEND_URL)
-    	? import.meta.env.VITE_BACKEND_URL
-    	: ((typeof process !== 'undefined' && process.env && process.env.REACT_APP_BACKEND_URL)
-    		? process.env.REACT_APP_BACKEND_URL
-    		: 'https://tetrixuno.ddns.net');
-    const downloadUrl = `https://tetrixuno.ddns.net/api/files/download/${filePath}`;
-    
     try {
-      setError(''); // Clear previous errors
-      setSuccess('Начинаю скачивание файла...');
+      setError('');
+      setSuccess('');
+      
+      // Исправленный URL - убираем лишние пробелы
+      const downloadUrl = `https://tetrixuno.ddns.net/api/files/download/${filePath}`;
+      
+      // Исправленный URL для верификации
+      const verifyUrl = `https://tetrixuno.ddns.net/api/files/verify/${filePath}`;
       
       // Сначала проверяем целостность файла
-      const verifyUrl = `https://tetrixuno.ddns.net/api/files/verify/${filePath}`;
       const verifyResponse = await fetch(verifyUrl, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -155,47 +154,18 @@ export const SubmissionManager = ({ onStatsUpdate }) => {
         throw new Error('Файл пустой или поврежден');
       }
 
-      // Проверяем, что файл действительно скачивается
-      const reader = response.body.getReader();
-      let receivedLength = 0;
-      const chunks = [];
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        
-        if (done) break;
-        
-        chunks.push(value);
-        receivedLength += value.length;
-        
-        // Показываем прогресс для больших файлов
-        if (contentLength && contentLength > 1024 * 1024) { // > 1MB
-          const progress = Math.round((receivedLength / contentLength) * 100);
-          setSuccess(`Скачивание: ${progress}%`);
-        }
-      }
-      
-      // Собираем файл из чанков
-      const blob = new Blob(chunks);
+      const blob = await response.blob();
       
       // Check if blob is empty
       if (blob.size === 0) {
         throw new Error('Файл пустой или поврежден');
-      }
-      
-      // Проверяем размер скачанного файла
-      if (contentLength && blob.size !== parseInt(contentLength)) {
-        console.warn(`Size mismatch: expected ${contentLength}, got ${blob.size}`);
-        if (blob.size < parseInt(contentLength) * 0.9) { // Если скачалось меньше 90%
-          throw new Error('Файл скачан не полностью. Попробуйте еще раз.');
-        }
       }
 
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = fileName || 'download';
+      link.download = fileName || filePath.split('/').pop() || 'download';
       link.style.display = 'none';
       
       document.body.appendChild(link);
@@ -254,6 +224,13 @@ export const SubmissionManager = ({ onStatsUpdate }) => {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {success && !isGradeDialogOpen && (
+        <Alert variant="default" className="border-green-200 bg-green-50">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">{success}</AlertDescription>
         </Alert>
       )}
 
@@ -564,4 +541,3 @@ const SubmissionsList = ({ submissions, assignments, onGrade, showGradeButton })
     </div>
   );
 };
-
