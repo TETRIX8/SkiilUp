@@ -5,9 +5,24 @@ import { cn } from "@/lib/utils"
 
 function Progress({
   className,
-  value,
+  value = 0,
+  indicatorClassName,
+  animate = true,
+  durationMs = 600,
   ...props
 }) {
+  const [internalValue, setInternalValue] = React.useState(0)
+
+  React.useEffect(() => {
+    if (!animate) {
+      setInternalValue(value ?? 0)
+      return
+    }
+    // Trigger transition to the new value on the next frame
+    let raf = requestAnimationFrame(() => setInternalValue(value ?? 0))
+    return () => cancelAnimationFrame(raf)
+  }, [value, animate])
+
   return (
     <ProgressPrimitive.Root
       data-slot="progress"
@@ -18,8 +33,14 @@ function Progress({
       {...props}>
       <ProgressPrimitive.Indicator
         data-slot="progress-indicator"
-        className="bg-primary h-full w-full flex-1 transition-all"
-        style={{ transform: `translateX(-${100 - (value || 0)}%)` }} />
+        className={cn(
+          "h-full w-full flex-1 transition-transform ease-out",
+          indicatorClassName || "bg-primary"
+        )}
+        style={{
+          transform: `translateX(-${100 - (internalValue || 0)}%)`,
+          transitionDuration: `${Math.max(0, durationMs)}ms`
+        }} />
     </ProgressPrimitive.Root>
   );
 }

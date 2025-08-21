@@ -268,7 +268,12 @@ export const StudentDashboard = () => {
                       <span>Прогресс уровня</span>
                       <span>{userStats?.level_progress || 0}%</span>
                     </div>
-                    <Progress value={userStats?.level_progress || 0} className="h-2 bg-white/20" />
+                    <Progress
+                      value={userStats?.level_progress || 0}
+                      className="h-2 bg-white/20"
+                      indicatorClassName="bg-gradient-to-r from-yellow-300 to-orange-400"
+                      durationMs={700}
+                    />
                   </div>
                 </div>
               </div>
