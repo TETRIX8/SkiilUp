@@ -110,17 +110,15 @@ export const SubmissionManager = ({ onStatsUpdate }) => {
   };
 
   const handleDownloadFile = async (filePath, fileName) => {
+    const API_BASE_HOST = 'https://tetrixuno.ddns.net';
+    const downloadUrl = `${API_BASE_HOST}/api/files/download/${filePath}`;
+    
     try {
-      setError('');
-      setSuccess('');
-      
-      // Исправленный URL - убираем лишние пробелы
-      const downloadUrl = `https://tetrixuno.ddns.net/api/files/download/${filePath}`;
-      
-      // Исправленный URL для верификации
-      const verifyUrl = `https://tetrixuno.ddns.net/api/files/verify/${filePath}`;
+      setError(''); // Clear previous errors
+      setSuccess('Начинаю скачивание файла...');
       
       // Сначала проверяем целостность файла
+      const verifyUrl = `${API_BASE_HOST}/api/files/verify/${filePath}`;
       const verifyResponse = await fetch(verifyUrl, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -154,18 +152,47 @@ export const SubmissionManager = ({ onStatsUpdate }) => {
         throw new Error('Файл пустой или поврежден');
       }
 
-      const blob = await response.blob();
+      // Проверяем, что файл действительно скачивается
+      const reader = response.body.getReader();
+      let receivedLength = 0;
+      const chunks = [];
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) break;
+        
+        chunks.push(value);
+        receivedLength += value.length;
+        
+        // Показываем прогресс для больших файлов
+        if (contentLength && contentLength > 1024 * 1024) { // > 1MB
+          const progress = Math.round((receivedLength / contentLength) * 100);
+          setSuccess(`Скачивание: ${progress}%`);
+        }
+      }
+      
+      // Собираем файл из чанков
+      const blob = new Blob(chunks);
       
       // Check if blob is empty
       if (blob.size === 0) {
         throw new Error('Файл пустой или поврежден');
+      }
+      
+      // Проверяем размер скачанного файла
+      if (contentLength && blob.size !== parseInt(contentLength)) {
+        console.warn(`Size mismatch: expected ${contentLength}, got ${blob.size}`);
+        if (blob.size < parseInt(contentLength) * 0.9) { // Если скачалось меньше 90%
+          throw new Error('Файл скачан не полностью. Попробуйте еще раз.');
+        }
       }
 
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = fileName || filePath.split('/').pop() || 'download';
+      link.download = fileName || 'download';
       link.style.display = 'none';
       
       document.body.appendChild(link);
