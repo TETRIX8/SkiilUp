@@ -267,13 +267,12 @@ export const AssignmentDetail = () => {
         await apiClient.createSubmission(submissionData);
         setSuccess('Ответ успешно отправлен!');
         
-        // Записываем достижение за отправку задания
-        try {
-          await apiClient.recordSubmission(parseInt(id));
-        } catch (achievementError) {
-          console.error('Error recording achievement:', achievementError);
-          // Не прерываем выполнение из-за ошибки достижений
-        }
+        // Удалено: отдельный вызов записи достижения, чтобы избежать двойного инкремента
+        // try {
+        //   await apiClient.recordSubmission(parseInt(id));
+        // } catch (achievementError) {
+        //   console.error('Error recording achievement:', achievementError);
+        // }
       }
       
       await loadAssignmentData();
