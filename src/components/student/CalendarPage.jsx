@@ -62,6 +62,20 @@ export const CalendarPage = () => {
     return submissions.find(sub => sub.assignment_id === assignmentId);
   };
 
+  // Парсер даты дедлайна: корректно обрабатывает формат YYYY-MM-DD как локальный конец дня
+  const parseDueDateLocal = (value) => {
+    if (!value) return null;
+    if (typeof value === 'string') {
+      const dateOnlyMatch = value.match(/^\d{4}-\d{2}-\d{2}$/);
+      if (dateOnlyMatch) {
+        const [y, m, d] = value.split('-').map(Number);
+        return new Date(y, m - 1, d, 23, 59, 59, 999);
+      }
+    }
+    // ISO или Date-совместимая строка/объект
+    return new Date(value);
+  };
+
   const getAssignmentStatus = (assignment) => {
     const submission = getSubmissionForAssignment(assignment.id);
     if (submission) {
@@ -71,7 +85,7 @@ export const CalendarPage = () => {
       return { status: 'submitted', label: 'Отправлено', color: 'bg-blue-100 text-blue-800' };
     }
     
-    const dueDate = new Date(assignment.due_date);
+    const dueDate = parseDueDateLocal(assignment.due_date);
     const now = new Date();
     
     if (dueDate < now) {
@@ -105,13 +119,13 @@ export const CalendarPage = () => {
 
   const getEventsForDate = (date) => {
     return assignments.filter(assignment => {
-      const assignmentDate = new Date(assignment.due_date);
+      const assignmentDate = parseDueDateLocal(assignment.due_date);
       return assignmentDate.toDateString() === date.toDateString();
     });
   };
 
   const getAssignmentColor = (assignment) => {
-    const dueDate = new Date(assignment.due_date);
+    const dueDate = parseDueDateLocal(assignment.due_date);
     const now = new Date();
     const daysUntilDue = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
     
@@ -154,7 +168,7 @@ export const CalendarPage = () => {
       
       // Находим самое срочное задание для определения цвета
       const mostUrgentAssignment = eventsForDate.reduce((mostUrgent, assignment) => {
-        const dueDate = new Date(assignment.due_date);
+        const dueDate = parseDueDateLocal(assignment.due_date);
         const now = new Date();
         const daysUntilDue = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
         
@@ -187,15 +201,15 @@ export const CalendarPage = () => {
 
   const upcomingDeadlines = assignments
     .filter(assignment => {
-      const dueDate = new Date(assignment.due_date);
+      const dueDate = parseDueDateLocal(assignment.due_date);
       const now = new Date();
       return dueDate > now && !getSubmissionForAssignment(assignment.id);
     })
-    .sort((a, b) => new Date(a.due_date) - new Date(b.due_date))
+    .sort((a, b) => parseDueDateLocal(a.due_date) - parseDueDateLocal(b.due_date))
     .slice(0, 5);
 
   const overdueAssignments = assignments.filter(assignment => {
-    const dueDate = new Date(assignment.due_date);
+    const dueDate = parseDueDateLocal(assignment.due_date);
     const now = new Date();
     return dueDate < now && !getSubmissionForAssignment(assignment.id);
   });
@@ -352,13 +366,10 @@ export const CalendarPage = () => {
                             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
                               <div className="text-right order-2 sm:order-1">
                                 <p className="text-xs sm:text-sm font-medium text-gray-900">
-                                  {new Date(assignment.due_date).toLocaleDateString('ru-RU')}
+                                  {(() => { const d = parseDueDateLocal(assignment.due_date); return d.toLocaleDateString('ru-RU'); })()}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                  {new Date(assignment.due_date).toLocaleTimeString('ru-RU', {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  })}
+                                  {(() => { const d = parseDueDateLocal(assignment.due_date); return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); })()}
                                 </p>
                               </div>
                               <div className="flex items-center space-x-2 order-1 sm:order-2">
@@ -453,7 +464,7 @@ export const CalendarPage = () => {
                 <CardContent className="p-4">
                   <div className="space-y-3">
                     {upcomingDeadlines.map((assignment, index) => {
-                      const dueDate = new Date(assignment.due_date);
+                      const dueDate = parseDueDateLocal(assignment.due_date);
                       const now = new Date();
                       const daysUntilDue = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
                       
@@ -506,7 +517,7 @@ export const CalendarPage = () => {
                 <CardContent className="p-4">
                   <div className="space-y-3">
                     {overdueAssignments.map((assignment, index) => {
-                      const dueDate = new Date(assignment.due_date);
+                      const dueDate = parseDueDateLocal(assignment.due_date);
                       const now = new Date();
                       const daysOverdue = Math.ceil((now - dueDate) / (1000 * 60 * 60 * 24));
                       
