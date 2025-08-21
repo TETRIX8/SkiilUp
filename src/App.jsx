@@ -22,6 +22,7 @@ import './App.css';
 import { AssignmentsPage } from './components/student/AssignmentsPage';
 import ResetPasswordPage from './components/auth/ResetPasswordPage';
 import WebGLIntro from './components/ui/WebGLIntro';
+import { CommunityPage } from './components/student/CommunityPage';
 
 function AppContent() {
   const { isAuthenticated, loading, user } = useAuth();
@@ -81,7 +82,7 @@ function AppContent() {
               <Route path="/achievements" element={<AchievementsPage />} />
               <Route path="/calendar" element={<CalendarPage />} />
               <Route path="/progress" element={<ProgressPage />} />
-              <Route path="/community" element={<DisciplinesPage />} />
+              <Route path="/community" element={<CommunityPage />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Profile />} />
               <Route path="*" element={<Error404 />} />
