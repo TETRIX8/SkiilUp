@@ -17,11 +17,13 @@ export const useAchievements = () => {
       if (response.success) {
         const currentAchievements = response.achievements;
         
-        // Проверяем новые достижения
+        // Проверяем новые достижения (только те, которые стали завершёнными и ещё не просмотрены)
         const newCompleted = [];
         Object.entries(currentAchievements).forEach(([key, achievement]) => {
           const previous = previousAchievementsRef.current[key];
-          if (achievement.is_completed && (!previous || !previous.is_completed)) {
+          const justCompletedNow = achievement.is_completed && (!previous || !previous.is_completed);
+          const notViewed = !achievement.is_viewed;
+          if (justCompletedNow && notViewed) {
             newCompleted.push(achievement);
           }
         });

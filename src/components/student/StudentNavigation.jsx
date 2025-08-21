@@ -39,6 +39,7 @@ import {
   Info
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useAchievements } from '../../hooks/useAchievements';
 
 const navigationItems = [
   {
@@ -126,6 +127,8 @@ export const StudentNavigation = () => {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const { newAchievements, clearNewAchievements, removeNewAchievement } = useAchievements();
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   const currentPath = location.pathname;
 
@@ -497,13 +500,51 @@ export const StudentNavigation = () => {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="relative p-1.5 lg:p-2 rounded-full hover:bg-gray-100"
-                  >
-                    <Bell className="h-4 w-4 lg:h-5 lg:w-5 text-gray-600" />
-                  </Button>
+                  <div className="relative">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="relative p-1.5 lg:p-2 rounded-full hover:bg-gray-100"
+                      onClick={() => setIsNotificationsOpen(prev => !prev)}
+                    >
+                      <Bell className="h-4 w-4 lg:h-5 lg:w-5 text-gray-600" />
+                      {newAchievements.length > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                          {newAchievements.length}
+                        </span>
+                      )}
+                    </Button>
+
+                    {isNotificationsOpen && (
+                      <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white shadow-2xl border p-2 z-50">
+                        <div className="flex items-center justify-between px-2 py-1">
+                          <span className="text-sm font-semibold">Уведомления</span>
+                          {newAchievements.length > 0 && (
+                            <Button size="sm" variant="ghost" onClick={clearNewAchievements} className="text-xs">Отметить всё прочитанным</Button>
+                          )}
+                        </div>
+                        <div className="max-h-80 overflow-y-auto">
+                          {newAchievements.length === 0 ? (
+                            <div className="px-3 py-6 text-sm text-gray-500 text-center">Нет новых уведомлений</div>
+                          ) : (
+                            newAchievements.map((a) => (
+                              <div key={a.id} className="flex items-start gap-3 px-3 py-2 hover:bg-gray-50 rounded-lg">
+                                <div className="mt-1 h-2 w-2 rounded-full bg-blue-500"></div>
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium">{a.title}</div>
+                                  <div className="text-xs text-gray-600">{a.description}</div>
+                                  <div className="mt-1 flex items-center gap-2">
+                                    <Button size="sm" className="h-6 px-2 text-xs" variant="secondary" onClick={() => removeNewAchievement(a.id)}>Прочитано</Button>
+                                    <Button size="sm" className="h-6 px-2 text-xs" variant="outline" onClick={() => { setIsNotificationsOpen(false); navigate('/achievements'); }}>Открыть достижения</Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
 
                 <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
