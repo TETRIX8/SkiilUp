@@ -20,31 +20,36 @@ import {
   Calendar,
   MessageCircle,
   Eye,
-  Download
+  Download,
+  Trophy,
+  Zap,
+  Users,
+  BookMarked
 } from 'lucide-react';
 import { StudentNavigation } from './StudentNavigation';
 import { apiClient } from '../../lib/api';
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, Area, AreaChart } from 'recharts';
 
 export const GradesPage = () => {
   const [assignments, setAssignments] = useState([]);
   const [submissions, setSubmissions] = useState([]);
-  const [topics, setTopics] = useState([]);
+  const [disciplines, setDisciplines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedTopic, setSelectedTopic] = useState('all');
+  const [selectedDiscipline, setSelectedDiscipline] = useState('all');
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [assignmentsResponse, submissionsResponse, topicsResponse] = await Promise.all([
+        const [assignmentsResponse, submissionsResponse, disciplinesResponse] = await Promise.all([
           apiClient.getAssignments(),
           apiClient.getMySubmissions(),
-          apiClient.getTopics()
+          apiClient.getDisciplines()
         ]);
         setAssignments(assignmentsResponse.assignments || []);
         setSubmissions(submissionsResponse.submissions || []);
-        setTopics(topicsResponse.topics || []);
+        setDisciplines(disciplinesResponse.disciplines || []);
       } catch (error) {
         console.error("Ошибка загрузки данных:", error);
       } finally {
@@ -56,7 +61,7 @@ export const GradesPage = () => {
   }, []);
 
   const gradedSubmissions = submissions.filter(s => s.is_graded);
-  const totalAssignments = assignments.length;
+  const totalAssignments = 100; // Максимум 100 баллов за дисциплину
   const completedAssignments = gradedSubmissions.length;
   const averageScore = gradedSubmissions.length > 0 
     ? (() => {
@@ -90,28 +95,44 @@ export const GradesPage = () => {
     return { color: 'bg-red-100 text-red-800', text: 'Неудовлетворительно', grade: 'D' };
   };
 
-  const getTopicProgress = (topicId) => {
-    const topicAssignments = assignments.filter(a => a.topic_id === topicId);
-    const topicSubmissions = submissions.filter(s => 
-      topicAssignments.some(a => a.id === s.assignment_id && s.is_graded)
+  const getDisciplineProgress = (disciplineId) => {
+    // Получаем все задания для данной дисциплины
+    const disciplineAssignments = assignments.filter(a => {
+      // Предполагаем, что у задания есть связь с дисциплиной через topic
+      // Нужно найти тему, которая принадлежит данной дисциплине
+      return a.discipline_id === disciplineId || a.topic?.discipline_id === disciplineId;
+    });
+    
+    const disciplineSubmissions = submissions.filter(s => 
+      disciplineAssignments.some(a => a.id === s.assignment_id && s.is_graded)
     );
     
-    if (topicSubmissions.length === 0) return { progress: 0, average: 0 };
+    if (disciplineSubmissions.length === 0) return { progress: 0, average: 0, totalScore: 0 };
     
-    const progress = topicAssignments.length > 0 ? (topicSubmissions.length / topicAssignments.length) * 100 : 0;
+    // Рассчитываем прогресс как процент выполненных заданий от общего количества
+    const progress = disciplineAssignments.length > 0 ? (disciplineSubmissions.length / disciplineAssignments.length) * 100 : 0;
+    
+    // Рассчитываем средний балл
     let sumPct = 0;
     let count = 0;
-    for (const s of topicSubmissions) {
-      const a = topicAssignments.find(x => x.id === s.assignment_id);
+    let totalScore = 0;
+    for (const s of disciplineSubmissions) {
+      const a = disciplineAssignments.find(x => x.id === s.assignment_id);
       const max = a?.max_score || 100;
       if (max > 0 && s.score != null) {
         sumPct += (s.score / max) * 100;
+        totalScore += s.score;
         count += 1;
       }
     }
     const average = count ? sumPct / count : 0;
     
-    return { progress, average: average.toFixed(1) };
+    return { 
+      progress, 
+      average: average.toFixed(1), 
+      totalScore: totalScore.toFixed(0),
+      maxPossibleScore: disciplineAssignments.reduce((sum, a) => sum + (a.max_score || 100), 0)
+    };
   };
 
   const gradeDistribution = {
@@ -132,6 +153,52 @@ export const GradesPage = () => {
       return assignment && (s.score / assignment.max_score) * 100 < 70;
     }).length
   };
+
+  // Данные для круговой диаграммы распределения оценок
+  const pieChartData = [
+    { name: 'Отлично (90-100%)', value: gradeDistribution.excellent, color: '#10B981' },
+    { name: 'Хорошо (80-89%)', value: gradeDistribution.good, color: '#3B82F6' },
+    { name: 'Удовлетворительно (70-79%)', value: gradeDistribution.satisfactory, color: '#F59E0B' },
+    { name: 'Неудовлетворительно (<70%)', value: gradeDistribution.poor, color: '#EF4444' }
+  ].filter(item => item.value > 0);
+
+  // Данные для столбчатой диаграммы по дисциплинам
+  const disciplineData = disciplines.map(discipline => {
+    const { progress, average, totalScore, maxPossibleScore } = getDisciplineProgress(discipline.id);
+    return {
+      name: discipline.name,
+      progress: Math.round(progress),
+      average: parseFloat(average),
+      totalScore: parseFloat(totalScore),
+      maxScore: maxPossibleScore,
+      scorePercentage: maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0
+    };
+  });
+
+  // Данные для линейной диаграммы прогресса
+  const progressData = [
+    { month: 'Сент', progress: 10 },
+    { month: 'Окт', progress: 25 },
+    { month: 'Нояб', progress: 40 },
+    { month: 'Дек', progress: 60 },
+    { month: 'Янв', progress: 75 },
+    { month: 'Фев', progress: 85 },
+    { month: 'Март', progress: 95 }
+  ];
+
+  // Данные для области прогресса по времени
+  const areaChartData = [
+    { name: 'Неделя 1', completed: 2, total: 10 },
+    { name: 'Неделя 2', completed: 5, total: 15 },
+    { name: 'Неделя 3', completed: 8, total: 20 },
+    { name: 'Неделя 4', completed: 12, total: 25 },
+    { name: 'Неделя 5', completed: 18, total: 30 },
+    { name: 'Неделя 6', completed: 25, total: 35 },
+    { name: 'Неделя 7', completed: 32, total: 40 },
+    { name: 'Неделя 8', completed: 40, total: 45 }
+  ];
+
+  const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
   if (loading) {
     return (
@@ -165,7 +232,7 @@ export const GradesPage = () => {
               Мои оценки
             </h1>
             <p className="text-gray-600 text-lg">
-              Просматривайте свои результаты и отслеживайте прогресс
+              Просматривайте свои результаты и отслеживайте прогресс по дисциплинам
             </p>
           </div>
         </motion.div>
@@ -177,7 +244,7 @@ export const GradesPage = () => {
           transition={{ delay: 0.1 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
         >
-          <Card className="shadow-lg border-l-4 border-l-blue-500">
+          <Card className="shadow-lg border-l-4 border-l-blue-500 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="bg-blue-100 p-3 rounded-full">
@@ -191,7 +258,7 @@ export const GradesPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg border-l-4 border-l-green-500">
+          <Card className="shadow-lg border-l-4 border-l-green-500 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="bg-green-100 p-3 rounded-full">
@@ -205,21 +272,21 @@ export const GradesPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg border-l-4 border-l-purple-500">
+          <Card className="shadow-lg border-l-4 border-l-purple-500 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="bg-purple-100 p-3 rounded-full">
                   <Target className="h-6 w-6 text-purple-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Всего заданий</p>
+                  <p className="text-sm font-medium text-gray-500">Максимум баллов</p>
                   <p className="text-2xl font-bold text-gray-900">{totalAssignments}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg border-l-4 border-l-amber-500">
+          <Card className="shadow-lg border-l-4 border-l-amber-500 hover:shadow-xl transition-all duration-300">
             <CardContent className="p-6">
               <div className="flex items-center">
                 <div className="bg-amber-100 p-3 rounded-full">
@@ -228,7 +295,7 @@ export const GradesPage = () => {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Прогресс</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0}%
+                    {Math.round((completedAssignments / totalAssignments) * 100)}%
                   </p>
                 </div>
               </div>
@@ -252,9 +319,9 @@ export const GradesPage = () => {
                 <FileText className="h-4 w-4" />
                 <span>Задания</span>
               </TabsTrigger>
-              <TabsTrigger value="topics" className="flex items-center space-x-2">
+              <TabsTrigger value="disciplines" className="flex items-center space-x-2">
                 <BookOpen className="h-4 w-4" />
-                <span>По темам</span>
+                <span>По дисциплинам</span>
               </TabsTrigger>
               <TabsTrigger value="analytics" className="flex items-center space-x-2">
                 <Activity className="h-4 w-4" />
@@ -265,118 +332,159 @@ export const GradesPage = () => {
             {/* Вкладка "Обзор" */}
             <TabsContent value="overview" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Распределение оценок */}
+                {/* Круговая диаграмма распределения оценок */}
                 <Card className="shadow-lg">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <PieChart className="h-5 w-5" />
                       <span>Распределение оценок</span>
                     </CardTitle>
+                    <CardDescription>
+                      Визуализация ваших результатов по категориям
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Отличные (90-100%)</span>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-20 bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-green-500 h-2 rounded-full"
-                              style={{ width: `${gradedSubmissions.length ? (gradeDistribution.excellent / gradedSubmissions.length) * 100 : 0}%` }}
-                            />
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RechartsPieChart>
+                          <Pie
+                            data={pieChartData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {pieChartData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </RechartsPieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="mt-4 space-y-2">
+                      {pieChartData.map((item, index) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                            <span className="text-sm text-gray-600">{item.name}</span>
                           </div>
-                          <span className="font-medium text-green-600">{gradeDistribution.excellent}</span>
+                          <span className="font-medium">{item.value}</span>
                         </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Хорошие (80-89%)</span>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-20 bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-blue-500 h-2 rounded-full"
-                              style={{ width: `${gradedSubmissions.length ? (gradeDistribution.good / gradedSubmissions.length) * 100 : 0}%` }}
-                            />
-                          </div>
-                          <span className="font-medium text-blue-600">{gradeDistribution.good}</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Удовлетворительные (70-79%)</span>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-20 bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-yellow-500 h-2 rounded-full"
-                              style={{ width: `${gradedSubmissions.length ? (gradeDistribution.satisfactory / gradedSubmissions.length) * 100 : 0}%` }}
-                            />
-                          </div>
-                          <span className="font-medium text-yellow-600">{gradeDistribution.satisfactory}</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Неудовлетворительные (&lt;70%)</span>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-20 bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-red-500 h-2 rounded-full"
-                              style={{ width: `${gradedSubmissions.length ? (gradeDistribution.poor / gradedSubmissions.length) * 100 : 0}%` }}
-                            />
-                          </div>
-                          <span className="font-medium text-red-600">{gradeDistribution.poor}</span>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Последние оценки */}
+                {/* Столбчатая диаграмма по дисциплинам */}
                 <Card className="shadow-lg">
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
-                      <Award className="h-5 w-5" />
-                      <span>Последние оценки</span>
+                      <BarChart3 className="h-5 w-5" />
+                      <span>Результаты по дисциплинам</span>
                     </CardTitle>
+                    <CardDescription>
+                      Средний балл и прогресс по каждой дисциплине (макс. 100 баллов)
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {gradedSubmissions.slice(0, 5).map((submission, index) => {
-                        const assignment = assignments.find(a => a.id === submission.assignment_id);
-                        const gradeBadge = getGradeBadge(submission.score, assignment?.max_score || 100);
-                        
-                        return (
-                          <motion.div
-                            key={submission.id}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:shadow-sm transition-all duration-200"
-                          >
-                            <div className="flex-1">
-                              <h4 className="font-medium text-gray-900">
-                                {submission.assignment_title}
-                              </h4>
-                              <p className="text-sm text-gray-500">
-                                {new Date(submission.submitted_at).toLocaleDateString('ru-RU')}
-                              </p>
-                            </div>
-                            <div className="flex items-center space-x-3">
-                              <div className="text-right">
-                                <div className={`text-lg font-bold ${getGradeColor(submission.score, assignment?.max_score || 100)}`}>
-                                  {submission.score}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  из {assignment?.max_score || 'N/A'}
-                                </div>
-                              </div>
-                              <Badge className={gradeBadge.color}>
-                                {gradeBadge.grade}
-                              </Badge>
-                            </div>
-                          </motion.div>
-                        );
-                      })}
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={disciplineData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="scorePercentage" fill="#3B82F6" name="Баллы (%)" />
+                          <Bar dataKey="progress" fill="#10B981" name="Прогресс (%)" />
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Линейная диаграмма прогресса */}
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <TrendingUp className="h-5 w-5" />
+                    <span>Динамика прогресса</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Ваш прогресс по месяцам обучения
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={areaChartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Area type="monotone" dataKey="completed" stackId="1" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} name="Выполнено" />
+                        <Area type="monotone" dataKey="total" stackId="1" stroke="#10B981" fill="#10B981" fillOpacity={0.6} name="Всего заданий" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Последние оценки */}
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Award className="h-5 w-5" />
+                    <span>Последние оценки</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {gradedSubmissions.slice(0, 5).map((submission, index) => {
+                      const assignment = assignments.find(a => a.id === submission.assignment_id);
+                      const gradeBadge = getGradeBadge(submission.score, assignment?.max_score || 100);
+                      
+                      return (
+                        <motion.div
+                          key={submission.id}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:shadow-sm transition-all duration-200"
+                        >
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">
+                              {submission.assignment_title}
+                            </h4>
+                            <p className="text-sm text-gray-500">
+                              {new Date(submission.submitted_at).toLocaleDateString('ru-RU')}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <div className="text-right">
+                              <div className={`text-lg font-bold ${getGradeColor(submission.score, assignment?.max_score || 100)}`}>
+                                {submission.score}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                из {assignment?.max_score || 'N/A'}
+                              </div>
+                            </div>
+                            <Badge className={gradeBadge.color}>
+                              {gradeBadge.grade}
+                            </Badge>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Вкладка "Задания" */}
@@ -444,37 +552,53 @@ export const GradesPage = () => {
               </Card>
             </TabsContent>
 
-            {/* Вкладка "По темам" */}
-            <TabsContent value="topics" className="space-y-6">
+            {/* Вкладка "По дисциплинам" */}
+            <TabsContent value="disciplines" className="space-y-6">
               <Card className="shadow-lg">
                 <CardHeader>
-                  <CardTitle>Прогресс по темам</CardTitle>
+                  <CardTitle>Прогресс по дисциплинам</CardTitle>
                   <CardDescription>
-                    Ваши результаты по каждой теме
+                    Ваши результаты по каждой дисциплине (максимум 100 баллов за дисциплину)
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {topics.map((topic, index) => {
-                      const { progress, average } = getTopicProgress(topic.id);
+                    {disciplines.map((discipline, index) => {
+                      const { progress, average, totalScore, maxPossibleScore } = getDisciplineProgress(discipline.id);
                       
                       return (
                         <motion.div
-                          key={topic.id}
+                          key={discipline.id}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 }}
                           className="p-4 rounded-lg border border-gray-200 hover:shadow-md transition-all duration-200"
                         >
                           <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-semibold text-gray-900">{topic.title}</h4>
+                            <h4 className="font-semibold text-gray-900">{discipline.name}</h4>
                             <div className="flex items-center space-x-4">
                               <span className="text-sm text-gray-500">
                                 Средний результат: <span className="font-medium text-blue-600">{average}%</span>
                               </span>
                             </div>
                           </div>
-                          <p className="text-sm text-gray-600 mb-3">{topic.description}</p>
+                          <p className="text-sm text-gray-600 mb-3">{discipline.description}</p>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                            <div className="text-center p-3 bg-blue-50 rounded-lg">
+                              <div className="text-2xl font-bold text-blue-600">{totalScore}</div>
+                              <div className="text-sm text-gray-600">Набрано баллов</div>
+                            </div>
+                            <div className="text-center p-3 bg-green-50 rounded-lg">
+                              <div className="text-2xl font-bold text-green-600">{maxPossibleScore}</div>
+                              <div className="text-sm text-gray-600">Максимум баллов</div>
+                            </div>
+                            <div className="text-center p-3 bg-purple-50 rounded-lg">
+                              <div className="text-2xl font-bold text-purple-600">
+                                {maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0}%
+                              </div>
+                              <div className="text-sm text-gray-600">Процент выполнения</div>
+                            </div>
+                          </div>
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm">
                               <span className="text-gray-600">Прогресс выполнения</span>
@@ -506,6 +630,17 @@ export const GradesPage = () => {
                       <p className="text-sm text-gray-600">
                         Ваши оценки показывают стабильный рост успеваемости
                       </p>
+                      <div className="h-32">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={progressData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="month" />
+                            <YAxis />
+                            <Tooltip />
+                            <Line type="monotone" dataKey="progress" stroke="#3B82F6" strokeWidth={3} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
                       <div className="flex items-center space-x-2">
                         <div className="w-full bg-gray-200 rounded-full h-3">
                           <div className="bg-gradient-to-r from-green-400 to-blue-500 h-3 rounded-full" style={{ width: '75%' }} />
@@ -551,4 +686,4 @@ export const GradesPage = () => {
       </main>
     </div>
   );
-}; 
+};  
