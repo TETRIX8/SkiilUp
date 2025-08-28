@@ -24,6 +24,7 @@ import {
   Send
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import DeadlineWidget from './DeadlineWidget';
 import { apiClient } from '../../lib/api';
 
 export const AssignmentDetail = () => {
@@ -480,6 +481,11 @@ export const AssignmentDetail = () => {
               </div>
             </div>
           </div>
+          {assignment.due_date && (
+            <div className="mt-4">
+              <DeadlineWidget dueDate={assignment.due_date} />
+            </div>
+          )}
           {assignment.description && (
             <motion.p 
               className="text-gray-700 text-lg bg-white p-4 rounded-lg shadow-sm border border-gray-200"
