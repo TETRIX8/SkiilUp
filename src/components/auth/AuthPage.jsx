@@ -8,8 +8,8 @@ export const AuthPage = () => {
   const [currentForm, setCurrentForm] = useState('login'); // 'login', 'register', 'forgot'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 mobile-optimized">
+      <div className="w-full max-w-6xl container-mobile">
         {/* Mobile-first layout */}
         <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-center space-y-8 lg:space-y-0">
           {/* Left side - Branding */}

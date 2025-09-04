@@ -299,11 +299,11 @@ export const StudentDashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 mobile-fade-in"
         >
           <motion.div whileHover={{ y: -5 }} transition={{ type: "spring", stiffness: 300 }}>
-            <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-l-blue-500">
-              <CardContent className="p-6">
+            <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-l-blue-500 mobile-card">
+              <CardContent className="p-4 md:p-6">
                 <div className="flex items-center">
                   <div className="bg-blue-100 p-3 rounded-full">
                     <BookOpen className="h-6 w-6 text-blue-600" />
@@ -318,8 +318,8 @@ export const StudentDashboard = () => {
           </motion.div>
           
           <motion.div whileHover={{ y: -5 }} transition={{ type: "spring", stiffness: 300 }}>
-            <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-l-green-500">
-              <CardContent className="p-6">
+            <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-l-green-500 mobile-card">
+              <CardContent className="p-4 md:p-6">
                 <div className="flex items-center">
                   <div className="bg-green-100 p-3 rounded-full">
                     <FileText className="h-6 w-6 text-green-600" />
@@ -334,8 +334,8 @@ export const StudentDashboard = () => {
           </motion.div>
           
           <motion.div whileHover={{ y: -5 }} transition={{ type: "spring", stiffness: 300 }}>
-            <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-l-purple-500">
-              <CardContent className="p-6">
+            <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-l-purple-500 mobile-card">
+              <CardContent className="p-4 md:p-6">
                 <div className="flex items-center">
                   <div className="bg-purple-100 p-3 rounded-full">
                     <Star className="h-6 w-6 text-purple-600" />
@@ -350,8 +350,8 @@ export const StudentDashboard = () => {
           </motion.div>
           
           <motion.div whileHover={{ y: -5 }} transition={{ type: "spring", stiffness: 300 }}>
-            <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-l-amber-500">
-              <CardContent className="p-6">
+            <Card className="shadow-md hover:shadow-lg transition-shadow duration-300 border-l-4 border-l-amber-500 mobile-card">
+              <CardContent className="p-4 md:p-6">
                 <div className="flex items-center">
                   <div className="bg-amber-100 p-3 rounded-full">
                     <Flame className="h-6 w-6 text-amber-600" />
@@ -367,7 +367,7 @@ export const StudentDashboard = () => {
         </motion.div>
 
         {/* Основной контент */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Левая колонка - Последние задания */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -375,7 +375,7 @@ export const StudentDashboard = () => {
             transition={{ delay: 0.3, duration: 0.5 }}
             className="lg:col-span-2"
           >
-            <Card className="shadow-lg rounded-2xl overflow-hidden">
+            <Card className="shadow-lg rounded-2xl overflow-hidden mobile-card">
               <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">

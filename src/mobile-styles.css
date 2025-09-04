@@ -6,45 +6,57 @@
   .btn-mobile {
     min-height: 44px;
     min-width: 44px;
+    padding: 12px 16px;
+    font-size: 16px;
   }
   
   /* Form inputs should be larger on mobile */
   .input-mobile {
     min-height: 48px;
     font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px 16px;
+    border-radius: 8px;
   }
   
   /* Better spacing for mobile cards */
   .card-mobile {
     margin-bottom: 1rem;
     padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
   
   /* Responsive text sizes */
   .text-responsive-sm {
     font-size: 0.875rem;
+    line-height: 1.4;
   }
   
   .text-responsive-base {
     font-size: 1rem;
+    line-height: 1.5;
   }
   
   .text-responsive-lg {
     font-size: 1.125rem;
+    line-height: 1.4;
   }
   
   /* Mobile-friendly navigation */
   .nav-mobile {
     padding: 0.75rem 1rem;
+    min-height: 56px;
   }
   
   /* Better mobile grid layouts */
   .grid-mobile-1 {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
   
   .grid-mobile-2 {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
   }
   
   /* Mobile-specific spacing */
@@ -58,6 +70,46 @@
   
   .space-mobile-lg {
     gap: 1.5rem;
+  }
+  
+  /* Mobile typography improvements */
+  h1 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+    margin-bottom: 0.75rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Mobile container improvements */
+  .container-mobile {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 100%;
+  }
+  
+  /* Mobile button improvements */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Mobile form improvements */
+  input, textarea, select {
+    font-size: 16px;
+    min-height: 48px;
+    touch-action: manipulation;
   }
 }
 
@@ -97,6 +149,153 @@ body {
   textarea:focus {
     outline: 2px solid #3b82f6;
     outline-offset: 2px;
+  }
+  
+  /* Improved mobile scrolling */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Better mobile performance */
+  .mobile-optimized {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+  
+  /* Mobile-specific animations */
+  .mobile-fade-in {
+    animation: mobileFadeIn 0.3s ease-out;
+  }
+  
+  @keyframes mobileFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Mobile card hover effects */
+  .mobile-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .mobile-card:active {
+    transform: scale(0.98);
+  }
+  
+  /* Mobile navigation improvements */
+  .mobile-nav-item {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .mobile-nav-item:active {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+  
+  /* Mobile modal improvements */
+  .mobile-modal {
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Mobile form improvements */
+  .mobile-form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .mobile-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  
+  /* Mobile button groups */
+  .mobile-button-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  
+  .mobile-button-group button {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  /* Mobile list improvements */
+  .mobile-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .mobile-list-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
+  }
+  
+  .mobile-list-item:active {
+    background-color: #f3f4f6;
+  }
+  
+  .mobile-list-item:last-child {
+    border-bottom: none;
+  }
+}
+
+/* Small mobile devices (320px - 480px) */
+@media (max-width: 480px) {
+  .container-mobile {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  .mobile-button-group {
+    flex-direction: column;
+  }
+  
+  .mobile-button-group button {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+  }
+  
+  h3 {
+    font-size: 1.125rem;
+  }
+  
+  .text-responsive-lg {
+    font-size: 1rem;
+  }
+}
+
+/* Large mobile devices (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .grid-mobile-2 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .mobile-button-group {
+    flex-direction: row;
   }
 }
 

@@ -518,9 +518,9 @@ export const StudentNavigation = () => {
 
       {/* Мобильная навигация */}
       <div className="lg:hidden">
-        <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm sticky top-0 z-50">
+        <nav className="bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm sticky top-0 z-50 mobile-optimized">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-14 lg:h-16">
+            <div className="flex justify-between items-center h-14 lg:h-16 nav-mobile">
               {/* Логотип */}
               <motion.div
                 whileHover={{ scale: 1.05 }}
@@ -546,7 +546,7 @@ export const StudentNavigation = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="relative p-1.5 lg:p-2 rounded-full hover:bg-gray-100"
+                      className="relative p-2 lg:p-2 rounded-full hover:bg-gray-100 btn-mobile"
                       onClick={() => setIsNotificationsOpen(prev => !prev)}
                     >
                       <Bell className="h-4 w-4 lg:h-5 lg:w-5 text-gray-600" />
@@ -558,7 +558,7 @@ export const StudentNavigation = () => {
                     </Button>
 
                     {isNotificationsOpen && (
-                      <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white shadow-2xl border p-2 z-50">
+                      <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl bg-white shadow-2xl border p-2 z-50 mobile-modal">
                         <div className="flex items-center justify-between px-2 py-1">
                           <span className="text-sm font-semibold">Уведомления</span>
                           {newAchievements.length > 0 && (
