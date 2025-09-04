@@ -78,6 +78,13 @@ const navigationItems = [
     description: 'Ваши награды'
   },
   {
+    id: 'schedule',
+    label: 'Расписание',
+    icon: Calendar,
+    path: '/schedule',
+    description: 'Расписание занятий'
+  },
+  {
     id: 'calendar',
     label: 'Календарь',
     icon: Calendar,
