@@ -25,7 +25,13 @@ class OfflineApiClient {
 
   // Общий метод для офлайн-совместимых запросов
   async request(endpoint, options = {}, cacheKey = null) {
-    const url = `${apiClient.API_BASE_URL || 'https://tetrixuno.ddns.net/api'}${endpoint}`;
+    const API_BASE_HOST = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_BACKEND_URL)
+      ? import.meta.env.VITE_BACKEND_URL
+      : ((typeof process !== 'undefined' && process.env && process.env.REACT_APP_BACKEND_URL)
+        ? process.env.REACT_APP_BACKEND_URL
+        : 'https://tetrixuno.ddns.net');
+    const API_BASE_URL = `${API_BASE_HOST}/api`;
+    const url = `${API_BASE_URL}${endpoint}`;
     
     if (this.isOnline) {
       try {
@@ -76,12 +82,16 @@ class OfflineApiClient {
   async getDisciplines() {
     try {
       const data = await this.request('/disciplines/', {}, 'disciplines');
-      await saveDisciplines(data);
-      return data;
+      // Обрабатываем данные - API может возвращать объект с массивом или просто массив
+      const disciplines = Array.isArray(data) ? data : (data.disciplines || data.data || []);
+      if (disciplines.length > 0) {
+        await saveDisciplines(disciplines);
+      }
+      return data; // Возвращаем оригинальный ответ для совместимости
     } catch (error) {
       const cached = await getDisciplines();
       if (cached.length > 0) {
-        return cached;
+        return { disciplines: cached };
       }
       throw error;
     }
@@ -106,12 +116,16 @@ class OfflineApiClient {
       const endpoint = disciplineId ? `/topics/?discipline_id=${disciplineId}` : '/topics/';
       const cacheKey = disciplineId ? `topics_discipline_${disciplineId}` : 'topics';
       const data = await this.request(endpoint, {}, cacheKey);
-      await saveTopics(data);
-      return data;
+      // Обрабатываем данные - API может возвращать объект с массивом или просто массив
+      const topics = Array.isArray(data) ? data : (data.topics || data.data || []);
+      if (topics.length > 0) {
+        await saveTopics(topics);
+      }
+      return data; // Возвращаем оригинальный ответ для совместимости
     } catch (error) {
       const cached = disciplineId ? await getTopicsByDiscipline(disciplineId) : await getTopics();
       if (cached.length > 0) {
-        return cached;
+        return { topics: cached };
       }
       throw error;
     }
@@ -134,12 +148,16 @@ class OfflineApiClient {
   async getAssignments() {
     try {
       const data = await this.request('/assignments/', {}, 'assignments');
-      await saveAssignments(data);
-      return data;
+      // Обрабатываем данные - API может возвращать объект с массивом или просто массив
+      const assignments = Array.isArray(data) ? data : (data.assignments || data.data || []);
+      if (assignments.length > 0) {
+        await saveAssignments(assignments);
+      }
+      return data; // Возвращаем оригинальный ответ для совместимости
     } catch (error) {
       const cached = await getAssignments();
       if (cached.length > 0) {
-        return cached;
+        return { assignments: cached };
       }
       throw error;
     }
@@ -175,12 +193,16 @@ class OfflineApiClient {
   async getAchievements() {
     try {
       const data = await this.request('/achievements/', {}, 'achievements');
-      await saveAchievements(data);
-      return data;
+      // Обрабатываем данные - API может возвращать объект с массивом или просто массив
+      const achievements = Array.isArray(data) ? data : (data.achievements || data.data || []);
+      if (achievements.length > 0) {
+        await saveAchievements(achievements);
+      }
+      return data; // Возвращаем оригинальный ответ для совместимости
     } catch (error) {
       const cached = await getAchievements();
       if (cached.length > 0) {
-        return cached;
+        return { achievements: cached };
       }
       throw error;
     }
@@ -195,6 +217,140 @@ class OfflineApiClient {
         return cached;
       }
       throw error;
+    }
+  }
+
+  // Отправки заданий
+  async getMySubmissions() {
+    try {
+      const data = await this.request('/submissions/my', {}, 'my_submissions');
+      // Обрабатываем данные - API может возвращать объект с массивом или просто массив
+      const submissions = Array.isArray(data) ? data : (data.submissions || data.data || []);
+      return data; // Возвращаем оригинальный ответ для совместимости
+    } catch (error) {
+      const cached = await getUserData('my_submissions');
+      if (cached) {
+        return { submissions: cached };
+      }
+      throw error;
+    }
+  }
+
+  async createSubmission(submissionData) {
+    try {
+      const data = await this.request('/submissions/', {
+        method: 'POST',
+        body: JSON.stringify(submissionData)
+      }, 'my_submissions');
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateSubmission(id, submissionData) {
+    try {
+      const data = await this.request(`/submissions/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(submissionData)
+      }, 'my_submissions');
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  // Достижения - запись событий
+  async recordVisit() {
+    try {
+      return await this.request('/achievements/visit', {
+        method: 'POST'
+      });
+    } catch (error) {
+      console.error('Error recording visit:', error);
+      // Не выбрасываем ошибку, так как это не критично
+    }
+  }
+
+  async recordSubmission(assignmentId, submittedAt = null) {
+    try {
+      return await this.request('/achievements/submission', {
+        method: 'POST',
+        body: JSON.stringify({
+          assignment_id: assignmentId,
+          submitted_at: submittedAt
+        })
+      });
+    } catch (error) {
+      console.error('Error recording submission:', error);
+    }
+  }
+
+  async recordPerfectScore() {
+    try {
+      return await this.request('/achievements/perfect-score', {
+        method: 'POST'
+      });
+    } catch (error) {
+      console.error('Error recording perfect score:', error);
+    }
+  }
+
+  async recordTopicCompletion(topicId) {
+    try {
+      return await this.request('/achievements/topic-completion', {
+        method: 'POST',
+        body: JSON.stringify({
+          topic_id: topicId
+        })
+      });
+    } catch (error) {
+      console.error('Error recording topic completion:', error);
+    }
+  }
+
+  async recordHelpfulComment() {
+    try {
+      return await this.request('/achievements/helpful-comment', {
+        method: 'POST'
+      });
+    } catch (error) {
+      console.error('Error recording helpful comment:', error);
+    }
+  }
+
+  async getUnviewedAchievements() {
+    try {
+      return await this.request('/achievements/unviewed', {}, 'unviewed_achievements');
+    } catch (error) {
+      const cached = await getUserData('unviewed_achievements');
+      if (cached) {
+        return cached;
+      }
+      throw error;
+    }
+  }
+
+  async markAchievementAsViewed(achievementType) {
+    try {
+      return await this.request('/achievements/mark-viewed', {
+        method: 'POST',
+        body: JSON.stringify({
+          achievement_type: achievementType
+        })
+      });
+    } catch (error) {
+      console.error('Error marking achievement as viewed:', error);
+    }
+  }
+
+  async markAllAchievementsAsViewed() {
+    try {
+      return await this.request('/achievements/mark-all-viewed', {
+        method: 'POST'
+      });
+    } catch (error) {
+      console.error('Error marking all achievements as viewed:', error);
     }
   }
 
