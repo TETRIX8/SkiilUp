@@ -1,26 +1,10 @@
-// public/sw.js - enhanced offline caching
-const STATIC_CACHE = 'skillup-static-v2';
-const RUNTIME_CACHE = 'skillup-runtime-v2';
-const API_CACHE = 'skillup-api-v2';
-const PRECACHE = [
-  '/', 
-  '/index.html', 
-  '/manifest.webmanifest',
-  '/assets/index.css',
-  '/assets/index.js'
-];
+// public/sw.js - basic offline caching
+const STATIC_CACHE = 'skillup-static-v1';
+const RUNTIME_CACHE = 'skillup-runtime-v1';
+const PRECACHE = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', e=>{ e.waitUntil(caches.open(STATIC_CACHE).then(c=>c.addAll(PRECACHE)).then(()=>self.skipWaiting())); });
-self.addEventListener('activate', e=>{ 
-  e.waitUntil(
-    caches.keys().then(keys=>
-      Promise.all(
-        keys.filter(k=>![STATIC_CACHE,RUNTIME_CACHE,API_CACHE].includes(k))
-          .map(k=>caches.delete(k))
-      )
-    ).then(()=>self.clients.claim())
-  ); 
-});
+self.addEventListener('activate', e=>{ e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>![STATIC_CACHE,RUNTIME_CACHE].includes(k)).map(k=>caches.delete(k)))).then(()=>self.clients.claim())); });
 
 self.addEventListener('fetch', e=>{
   const req = e.request; 
@@ -41,37 +25,15 @@ self.addEventListener('fetch', e=>{
     }
   };
   
-  // API запросы - кэшируем с приоритетом сети
   if(url.pathname.startsWith('/api') || url.href.includes('/api/')){
     e.respondWith(
       fetch(req)
         .then(res => { 
-          if (res.ok) {
-            const copy = res.clone(); 
-            safeCachePut(API_CACHE, req, copy);
-          }
+          const copy = res.clone(); 
+          safeCachePut(RUNTIME_CACHE, req, copy);
           return res; 
         })
-        .catch(() => {
-          // В офлайн режиме возвращаем кэшированные данные
-          return caches.match(req).then(cached => {
-            if (cached) {
-              return cached;
-            }
-            // Если нет кэша, возвращаем базовый ответ
-            return new Response(
-              JSON.stringify({ 
-                error: 'Offline', 
-                message: 'No internet connection and no cached data available' 
-              }),
-              { 
-                status: 503, 
-                statusText: 'Service Unavailable',
-                headers: { 'Content-Type': 'application/json' }
-              }
-            );
-          });
-        })
+        .catch(() => caches.match(req))
     );
     return;
   }

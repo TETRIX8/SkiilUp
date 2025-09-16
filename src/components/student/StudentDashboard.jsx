@@ -37,13 +37,10 @@ import {
   Lightbulb,
   Rocket,
   Gem,
-  X,
-  RefreshCw
+  X
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useOffline } from '../../contexts/OfflineContext';
-import { offlineApiClient } from '../../lib/offlineApi';
-import { useOfflineData } from '../../hooks/useOfflineData';
+import { apiClient } from '../../lib/api';
 import { StudentNavigation } from './StudentNavigation';
 import { Achievements } from './Achievements';
 import { AchievementNotification } from './AchievementNotification';
@@ -51,8 +48,6 @@ import { useAchievements } from '../../hooks/useAchievements';
 
 export const StudentDashboard = () => {
   const { user, logout } = useAuth();
-  const { isOnline } = useOffline();
-  const { isPreloading, refreshData } = useOfflineData();
   const navigate = useNavigate();
   const [topics, setTopics] = useState([]);
   const [assignments, setAssignments] = useState([]);
@@ -73,36 +68,30 @@ export const StudentDashboard = () => {
       
       // Загружаем данные параллельно
       const [topicsResponse, assignmentsResponse, submissionsResponse, statsResponse] = await Promise.all([
-        offlineApiClient.getTopics(),
-        offlineApiClient.getAssignments(),
-        offlineApiClient.getMySubmissions(),
-        offlineApiClient.getUserStats()
+        apiClient.getTopics(),
+        apiClient.getAssignments(),
+        apiClient.getMySubmissions(),
+        apiClient.getUserStats()
       ]);
       
-      setTopics(topicsResponse.topics || topicsResponse || []);
-      setAssignments(assignmentsResponse.assignments || assignmentsResponse || []);
-      setSubmissions(submissionsResponse.submissions || submissionsResponse || []);
+      setTopics(topicsResponse.topics || []);
+      setAssignments(assignmentsResponse.assignments || []);
+      setSubmissions(submissionsResponse.submissions || []);
       
       if (statsResponse.success) {
         setUserStats(statsResponse.stats);
-      } else if (statsResponse) {
-        setUserStats(statsResponse);
       }
       
       // Записываем посещение для достижений
       try {
-        await offlineApiClient.recordVisit();
+        await apiClient.recordVisit();
       } catch (e) {
         console.error('Error recording visit:', e);
       }
       
     } catch (error) {
       console.error("Ошибка загрузки данных:", error);
-      if (error.message.includes('Offline')) {
-        setError('Нет подключения к интернету. Показываем кэшированные данные.');
-      } else {
-        setError('Ошибка загрузки данных. Пожалуйста, попробуйте позже.');
-      }
+      setError('Ошибка загрузки данных. Пожалуйста, попробуйте позже.');
     } finally {
       setLoading(false);
     }
@@ -244,29 +233,6 @@ export const StudentDashboard = () => {
         >
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                {/* Офлайн индикатор */}
-                {!isOnline && (
-                  <div className="flex items-center space-x-2 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-                    <span>Офлайн</span>
-                  </div>
-                )}
-                
-                {/* Кнопка обновления */}
-                {isOnline && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={refreshData}
-                    disabled={isPreloading}
-                    className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 text-white border-white/30"
-                  >
-                    <RefreshCw className={`h-4 w-4 ${isPreloading ? 'animate-spin' : ''}`} />
-                    <span>Обновить</span>
-                  </Button>
-                )}
-              </div>
               <div>
                 <h1 className="text-3xl font-bold mb-2">
                   Добро пожаловать, {user?.first_name}! 👋

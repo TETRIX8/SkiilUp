@@ -34,12 +34,10 @@ import {
   BarChart3,
   Settings,
   Edit,
-  Camera,
-  Database
+  Camera
 } from 'lucide-react';
 import { apiClient } from "../lib/api";
 import { motion } from 'framer-motion';
-import OfflineDemo from '../components/ui/OfflineDemo';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -295,7 +293,7 @@ export const Profile = () => {
           {/* Tabs */}
           <motion.div variants={itemVariants}>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="profile" className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm">
                   <User className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Профиль</span>
@@ -307,10 +305,6 @@ export const Profile = () => {
                 <TabsTrigger value="achievements" className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm">
                   <Trophy className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Достижения</span>
-                </TabsTrigger>
-                <TabsTrigger value="offline" className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm">
-                  <Database className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>Офлайн</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -632,13 +626,6 @@ export const Profile = () => {
                       )}
                     </CardContent>
                   </Card>
-                </motion.div>
-              </TabsContent>
-
-              {/* Offline Tab */}
-              <TabsContent value="offline" className="space-y-4 sm:space-y-6">
-                <motion.div variants={itemVariants}>
-                  <OfflineDemo />
                 </motion.div>
               </TabsContent>
             </Tabs>
