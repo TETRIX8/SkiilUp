@@ -11,7 +11,8 @@ import {
   GraduationCap, 
   User,
   Settings,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -22,7 +23,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from '../../contexts/AuthContext';
-import { apiClient } from '../../lib/api';
+import { useOffline } from '../../contexts/OfflineContext';
+import { offlineApiClient } from '../../lib/offlineApi';
+import { useOfflineData } from '../../hooks/useOfflineData';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -48,6 +51,8 @@ const itemVariants = {
 
 export const DisciplinesPage = () => {
   const { user, logout } = useAuth();
+  const { isOnline } = useOffline();
+  const { isPreloading, refreshData } = useOfflineData();
   const navigate = useNavigate();
   const [disciplines, setDisciplines] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,11 +66,15 @@ export const DisciplinesPage = () => {
     try {
       setLoading(true);
       setError('');
-      const response = await apiClient.getDisciplines();
-      setDisciplines(response.disciplines || []);
+      const response = await offlineApiClient.getDisciplines();
+      setDisciplines(response.disciplines || response || []);
     } catch (error) {
       console.error("Ошибка загрузки дисциплин:", error);
-      setError('Ошибка загрузки данных. Пожалуйста, попробуйте позже.');
+      if (error.message.includes('Offline')) {
+        setError('Нет подключения к интернету. Показываем кэшированные данные.');
+      } else {
+        setError('Ошибка загрузки данных. Пожалуйста, попробуйте позже.');
+      }
     } finally {
       setLoading(false);
     }
@@ -131,6 +140,28 @@ export const DisciplinesPage = () => {
               </motion.h1>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* Офлайн индикатор */}
+              {!isOnline && (
+                <div className="flex items-center space-x-2 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                  <span>Офлайн</span>
+                </div>
+              )}
+              
+              {/* Кнопка обновления */}
+              {isOnline && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={refreshData}
+                  disabled={isPreloading}
+                  className="flex items-center space-x-2"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isPreloading ? 'animate-spin' : ''}`} />
+                  <span>Обновить</span>
+                </Button>
+              )}
+              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <motion.div

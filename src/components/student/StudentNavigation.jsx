@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAchievements } from '../../hooks/useAchievements';
+import SyncStatus from '../ui/SyncStatus';
 
 const navigationItems = [
   {
@@ -203,6 +204,9 @@ export const StudentNavigation = () => {
 
               {/* Правая часть - быстрые действия и профиль */}
               <div className="flex items-center space-x-2 lg:space-x-4">
+                {/* Статус синхронизации */}
+                <SyncStatus className="hidden md:flex" />
+                
                 {/* Быстрые действия */}
                 <div className="flex items-center space-x-1 lg:space-x-2">
                   {/* Notifications bell with popover (desktop) */}
@@ -538,6 +542,8 @@ export const StudentNavigation = () => {
 
               {/* Правая часть - уведомления и меню */}
               <div className="flex items-center space-x-2">
+                {/* Статус синхронизации для мобильных */}
+                <SyncStatus className="md:hidden" />
                 <motion.div
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}

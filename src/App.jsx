@@ -2,6 +2,8 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { OfflineProvider } from './contexts/OfflineContext';
+import OfflineIndicator from './components/ui/OfflineIndicator';
 import { AuthPage } from './components/auth/AuthPage';
 import { DisciplinesPage } from './components/student/DisciplinesPage';
 import { DisciplineDetail } from './components/student/DisciplineDetail';
@@ -100,8 +102,11 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <WebGLIntro />
-      <AppContent />
+      <OfflineProvider>
+        <WebGLIntro />
+        <OfflineIndicator />
+        <AppContent />
+      </OfflineProvider>
     </AuthProvider>
   );
 }
