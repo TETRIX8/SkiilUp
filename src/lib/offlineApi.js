@@ -89,10 +89,13 @@ class OfflineApiClient {
       }
       return data; // Возвращаем оригинальный ответ для совместимости
     } catch (error) {
+      console.log('Trying to load disciplines from cache...');
       const cached = await getDisciplines();
       if (cached.length > 0) {
+        console.log(`Loaded ${cached.length} disciplines from cache`);
         return { disciplines: cached };
       }
+      console.error('No cached disciplines available');
       throw error;
     }
   }
@@ -123,10 +126,13 @@ class OfflineApiClient {
       }
       return data; // Возвращаем оригинальный ответ для совместимости
     } catch (error) {
+      console.log('Trying to load topics from cache...');
       const cached = disciplineId ? await getTopicsByDiscipline(disciplineId) : await getTopics();
       if (cached.length > 0) {
+        console.log(`Loaded ${cached.length} topics from cache`);
         return { topics: cached };
       }
+      console.error('No cached topics available');
       throw error;
     }
   }
@@ -155,10 +161,13 @@ class OfflineApiClient {
       }
       return data; // Возвращаем оригинальный ответ для совместимости
     } catch (error) {
+      console.log('Trying to load assignments from cache...');
       const cached = await getAssignments();
       if (cached.length > 0) {
+        console.log(`Loaded ${cached.length} assignments from cache`);
         return { assignments: cached };
       }
+      console.error('No cached assignments available');
       throw error;
     }
   }
@@ -200,10 +209,13 @@ class OfflineApiClient {
       }
       return data; // Возвращаем оригинальный ответ для совместимости
     } catch (error) {
+      console.log('Trying to load achievements from cache...');
       const cached = await getAchievements();
       if (cached.length > 0) {
+        console.log(`Loaded ${cached.length} achievements from cache`);
         return { achievements: cached };
       }
+      console.error('No cached achievements available');
       throw error;
     }
   }
@@ -356,26 +368,44 @@ class OfflineApiClient {
 
   // Синхронизация всех данных
   async syncAllData() {
-    if (!this.isOnline) {
-      throw new Error('No internet connection');
-    }
-
     try {
-      // Загружаем все основные данные
-      const [disciplines, topics, assignments, achievements] = await Promise.all([
-        this.getDisciplines(),
-        this.getTopics(),
-        this.getAssignments(),
-        this.getAchievements()
-      ]);
+      if (this.isOnline) {
+        // Онлайн режим - пытаемся загрузить с сервера
+        const [disciplines, topics, assignments, achievements] = await Promise.allSettled([
+          this.getDisciplines(),
+          this.getTopics(),
+          this.getAssignments(),
+          this.getAchievements()
+        ]);
 
-      return {
-        disciplines,
-        topics,
-        assignments,
-        achievements,
-        syncedAt: new Date()
-      };
+        // Обрабатываем результаты Promise.allSettled
+        const results = {
+          disciplines: disciplines.status === 'fulfilled' ? disciplines.value : null,
+          topics: topics.status === 'fulfilled' ? topics.value : null,
+          assignments: assignments.status === 'fulfilled' ? assignments.value : null,
+          achievements: achievements.status === 'fulfilled' ? achievements.value : null,
+          syncedAt: new Date()
+        };
+
+        return results;
+      } else {
+        // Офлайн режим - загружаем из локального кэша
+        console.log('Loading data from local cache...');
+        const [disciplines, topics, assignments, achievements] = await Promise.all([
+          getDisciplines(),
+          getTopics(),
+          getAssignments(),
+          getAchievements()
+        ]);
+
+        return {
+          disciplines: disciplines.length > 0 ? { disciplines } : null,
+          topics: topics.length > 0 ? { topics } : null,
+          assignments: assignments.length > 0 ? { assignments } : null,
+          achievements: achievements.length > 0 ? { achievements } : null,
+          syncedAt: new Date()
+        };
+      }
     } catch (error) {
       console.error('Sync failed:', error);
       throw error;
@@ -384,14 +414,49 @@ class OfflineApiClient {
 
   // Предварительная загрузка данных для офлайн работы
   async preloadData() {
-    if (!this.isOnline) return;
-
     try {
-      console.log('Preloading data for offline use...');
-      await this.syncAllData();
-      console.log('Data preloaded successfully');
+      if (this.isOnline) {
+        console.log('Preloading data for offline use...');
+        await this.syncAllData();
+        console.log('Data preloaded successfully');
+      } else {
+        console.log('Offline mode - using cached data');
+        await this.syncAllData();
+        console.log('Cached data loaded successfully');
+      }
     } catch (error) {
       console.error('Preload failed:', error);
+      // Если не удалось загрузить данные, показываем сообщение пользователю
+      console.log('No data available. Please connect to internet to load data first.');
+    }
+  }
+
+  // Проверка наличия кэшированных данных
+  async hasCachedData() {
+    try {
+      const [disciplines, topics, assignments, achievements] = await Promise.all([
+        getDisciplines(),
+        getTopics(),
+        getAssignments(),
+        getAchievements()
+      ]);
+
+      return {
+        hasDisciplines: disciplines.length > 0,
+        hasTopics: topics.length > 0,
+        hasAssignments: assignments.length > 0,
+        hasAchievements: achievements.length > 0,
+        totalCached: disciplines.length + topics.length + assignments.length + achievements.length
+      };
+    } catch (error) {
+      console.error('Error checking cached data:', error);
+      return {
+        hasDisciplines: false,
+        hasTopics: false,
+        hasAssignments: false,
+        hasAchievements: false,
+        totalCached: 0
+      };
     }
   }
 }

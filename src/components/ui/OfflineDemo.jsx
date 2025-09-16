@@ -24,11 +24,16 @@ const OfflineDemo = () => {
   const [stats, setStats] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [testResults, setTestResults] = useState([]);
+  const [cachedDataInfo, setCachedDataInfo] = useState({});
 
   const loadStats = async () => {
     try {
       const storageStats = await getStorageStats();
       setStats(storageStats);
+      
+      // Загружаем информацию о кэшированных данных
+      const cachedInfo = await offlineApiClient.hasCachedData();
+      setCachedDataInfo(cachedInfo);
     } catch (error) {
       console.error('Error loading stats:', error);
     }
@@ -183,20 +188,65 @@ const OfflineDemo = () => {
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <p className="text-2xl font-bold text-blue-600">{stats.disciplines || 0}</p>
               <p className="text-sm text-gray-500">Дисциплины</p>
+              {cachedDataInfo.hasDisciplines && (
+                <Badge variant="secondary" className="text-xs mt-1">Кэшировано</Badge>
+              )}
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <p className="text-2xl font-bold text-green-600">{stats.topics || 0}</p>
               <p className="text-sm text-gray-500">Темы</p>
+              {cachedDataInfo.hasTopics && (
+                <Badge variant="secondary" className="text-xs mt-1">Кэшировано</Badge>
+              )}
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <p className="text-2xl font-bold text-purple-600">{stats.assignments || 0}</p>
               <p className="text-sm text-gray-500">Задания</p>
+              {cachedDataInfo.hasAssignments && (
+                <Badge variant="secondary" className="text-xs mt-1">Кэшировано</Badge>
+              )}
             </div>
             <div className="text-center p-3 bg-gray-50 rounded-lg">
               <p className="text-2xl font-bold text-yellow-600">{stats.achievements || 0}</p>
               <p className="text-sm text-gray-500">Достижения</p>
+              {cachedDataInfo.hasAchievements && (
+                <Badge variant="secondary" className="text-xs mt-1">Кэшировано</Badge>
+              )}
             </div>
           </div>
+
+          {/* Информация о кэшированных данных */}
+          {cachedDataInfo.totalCached > 0 && (
+            <div className="p-4 bg-green-50 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                <div>
+                  <p className="font-medium text-green-700">
+                    Данные доступны для офлайн работы
+                  </p>
+                  <p className="text-sm text-green-600">
+                    Всего кэшировано: {cachedDataInfo.totalCached} элементов
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {cachedDataInfo.totalCached === 0 && !isOnline && (
+            <div className="p-4 bg-orange-50 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <AlertCircle className="h-5 w-5 text-orange-500" />
+                <div>
+                  <p className="font-medium text-orange-700">
+                    Нет кэшированных данных
+                  </p>
+                  <p className="text-sm text-orange-600">
+                    Подключитесь к интернету для загрузки данных
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Дополнительная статистика */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -277,3 +327,4 @@ const OfflineDemo = () => {
 };
 
 export default OfflineDemo;
+

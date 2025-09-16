@@ -86,3 +86,4 @@ const SyncStatus = ({ className = "" }) => {
 };
 
 export default SyncStatus;
+
