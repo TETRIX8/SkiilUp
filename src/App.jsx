@@ -20,6 +20,7 @@ import Error404 from './pages/Error404';
 import { AKProjectBadge } from './components/ui/AKProjectBadge';
 import './App.css';
 import { AssignmentsPage } from './components/student/AssignmentsPage';
+import RatingPage from './components/student/RatingPage';
 import ResetPasswordPage from './components/auth/ResetPasswordPage';
 import WebGLIntro from './components/ui/WebGLIntro';
 import { CommunityPage } from './components/student/CommunityPage';
@@ -79,6 +80,7 @@ function AppContent() {
               <Route path="/topics/:id" element={<TopicDetail />} />
               <Route path="/assignments" element={<AssignmentsPage />} />
               <Route path="/assignments/:id" element={<AssignmentDetail />} />
+              <Route path="/rating" element={<RatingPage />} />
               <Route path="/grades" element={<GradesPage />} />
               <Route path="/achievements" element={<AchievementsPage />} />
               <Route path="/calendar" element={<CalendarPage />} />
