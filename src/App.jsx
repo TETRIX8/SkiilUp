@@ -20,7 +20,7 @@ import Error404 from './pages/Error404';
 import { AKProjectBadge } from './components/ui/AKProjectBadge';
 import './App.css';
 import { AssignmentsPage } from './components/student/AssignmentsPage';
-import RatingPage from './components/student/RatingPage';
+import { RatingPage } from './components/student/RatingPage';
 import ResetPasswordPage from './components/auth/ResetPasswordPage';
 import WebGLIntro from './components/ui/WebGLIntro';
 import { CommunityPage } from './components/student/CommunityPage';
