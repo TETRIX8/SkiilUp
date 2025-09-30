@@ -57,11 +57,11 @@ const navigationItems = [
     description: 'Изучение предметов'
   },
   {
-    id: 'assignments',
-    label: 'Задания',
-    icon: FileText,
-    path: '/assignments',
-    description: 'Выполнение заданий'
+    id: 'rating',
+    label: 'Рейтинг',
+    icon: Star,
+    path: '/rating',
+    description: 'Рейтинг студентов'
   },
   {
     id: 'grades',
@@ -151,7 +151,7 @@ export const StudentNavigation = () => {
                     <GraduationCap className="h-4 w-4 lg:h-6 lg:w-6 text-white" />
                   </div>
                   <span className="text-lg lg:text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
-                    SkillUp
+                    MoksuHub
                   </span>
                 </motion.div>
 
@@ -308,7 +308,7 @@ export const StudentNavigation = () => {
                         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-2">
                           <GraduationCap className="h-5 w-5 text-white" />
                         </div>
-                        <span className="text-lg font-bold">SkillUp</span>
+                        <span className="text-lg font-bold">MoksuHub</span>
                       </SheetTitle>
                     </SheetHeader>
                     
@@ -610,7 +610,7 @@ export const StudentNavigation = () => {
                         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-2">
                           <GraduationCap className="h-5 w-5 text-white" />
                         </div>
-                        <span className="text-lg font-bold">SkillUp</span>
+                        <span className="text-lg font-bold">MoksuHub</span>
                       </SheetTitle>
                     </SheetHeader>
                     
