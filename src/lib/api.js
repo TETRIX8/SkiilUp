@@ -467,6 +467,31 @@ class ApiClient {
   async getGitHubStats() {
     return this.request('/github/stats');
   }
+
+  // Rating endpoints
+  async getStudentsRating() {
+    return this.request('/rating/students');
+  }
+
+  async getMyRating() {
+    return this.request('/rating/my');
+  }
+
+  async getLeaderboard(limit = 50) {
+    return this.request(`/rating/leaderboard?limit=${limit}`);
+  }
+
+  async getRatingStats() {
+    return this.request('/rating/stats');
+  }
+
+  async getSubjectRating(subjectId) {
+    return this.request(`/rating/students/subject/${subjectId}`);
+  }
+
+  async getStudentRatingHistory(studentId, days = 30) {
+    return this.request(`/rating/students/${studentId}/history?days=${days}`);
+  }
 }
 
 export const apiClient = new ApiClient();

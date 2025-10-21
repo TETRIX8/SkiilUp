@@ -20,6 +20,8 @@ import {
   Trophy,
   Settings,
   TrendingUp,
+  TrendingDown,
+  Minus,
   Target,
   Award,
   BookOpenCheck,
@@ -45,6 +47,7 @@ import { StudentNavigation } from './StudentNavigation';
 import { Achievements } from './Achievements';
 import { AchievementNotification } from './AchievementNotification';
 import { useAchievements } from '../../hooks/useAchievements';
+import { useRating } from '../../hooks/useRating';
 
 export const StudentDashboard = () => {
   const { user, logout } = useAuth();
@@ -60,6 +63,9 @@ export const StudentDashboard = () => {
   
   // Хук для достижений
   const { newAchievements, removeNewAchievement } = useAchievements();
+  
+  // Хук для рейтинга
+  const { myRating, getMyPosition, getMyScore, getMyChange } = useRating();
 
   const loadData = useCallback(async () => {
     try {
@@ -533,6 +539,78 @@ export const StudentDashboard = () => {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Рейтинг */}
+            {myRating && (
+              <Card className="shadow-lg rounded-2xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 text-white">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Crown className="h-6 w-6" />
+                      <CardTitle>Ваш рейтинг</CardTitle>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate('/rating')}
+                      className="text-white hover:bg-white/20"
+                    >
+                      Подробнее
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full p-3">
+                          <Crown className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-2xl font-bold text-gray-900">#{getMyPosition()}</p>
+                          <p className="text-sm text-gray-600">Позиция в рейтинге</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-purple-600 flex items-center">
+                          <Gem className="h-5 w-5 mr-1" />
+                          {getMyScore()}
+                        </p>
+                        <p className="text-sm text-gray-600">баллов</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Изменение позиции</span>
+                      <div className={`flex items-center ${getMyChange() > 0 ? 'text-green-600' : getMyChange() < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                        {getMyChange() > 0 ? (
+                          <TrendingUp className="h-4 w-4 mr-1" />
+                        ) : getMyChange() < 0 ? (
+                          <TrendingDown className="h-4 w-4 mr-1" />
+                        ) : (
+                          <Minus className="h-4 w-4 mr-1" />
+                        )}
+                        <span className="text-sm font-medium">{Math.abs(getMyChange())}</span>
+                      </div>
+                    </div>
+                    
+                    <Progress 
+                      value={((getMyPosition() || 1) / 100) * 100} 
+                      className="h-2"
+                    />
+                    
+                    <Button
+                      onClick={() => navigate('/rating')}
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white"
+                    >
+                      <Trophy className="h-4 w-4 mr-2" />
+                      Посмотреть полный рейтинг
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Активность */}
             <Card className="shadow-lg rounded-2xl overflow-hidden">
